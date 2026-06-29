@@ -13,14 +13,15 @@ export interface Task {
 
 interface KanbanBoardProps {
   tasks: Task[];
-  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+  onTasksChange: (value: React.SetStateAction<Task[]>) => void;
+  userName?: string;
   showAddTaskModal: boolean;
   setShowAddTaskModal: (show: boolean) => void;
 }
 
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   tasks,
-  setTasks,
+  onTasksChange,
   showAddTaskModal,
   setShowAddTaskModal
 }) => {
@@ -33,7 +34,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   const [newPriority, setNewPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [newColumn, setNewColumn] = useState<Task['column']>('backlog');
   const [newAssignee, setNewAssignee] = useState('Atul Verma');
-  const [newDueDate, setNewDueDate] = useState('2026-07-05');
+  const [newDueDate, setNewDueDate] = useState(new Date().toISOString().split('T')[0]);
 
   const columns: { id: Task['column']; title: string; color: string }[] = [
     { id: 'backlog', title: 'Backlog / Ideas', color: 'border-t-2 border-slate-500' },
@@ -55,7 +56,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     e.preventDefault();
     const taskId = e.dataTransfer.getData('text/plain');
     if (taskId) {
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, column: targetCol } : t));
+      onTasksChange(prev => prev.map(t => t.id === taskId ? { ...t, column: targetCol } : t));
     }
   };
 
@@ -64,7 +65,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     const idx = colOrder.indexOf(currentCol);
     if (idx > 0) {
       const targetCol = colOrder[idx - 1];
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, column: targetCol } : t));
+      onTasksChange(prev => prev.map(t => t.id === taskId ? { ...t, column: targetCol } : t));
     }
   };
 
@@ -73,12 +74,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     const idx = colOrder.indexOf(currentCol);
     if (idx < colOrder.length - 1) {
       const targetCol = colOrder[idx + 1];
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, column: targetCol } : t));
+      onTasksChange(prev => prev.map(t => t.id === taskId ? { ...t, column: targetCol } : t));
     }
   };
 
   const handleDeleteTask = (taskId: string) => {
-    setTasks(prev => prev.filter(t => t.id !== taskId));
+    onTasksChange(prev => prev.filter(t => t.id !== taskId));
   };
 
   const handleAddTask = (e: React.FormEvent) => {
@@ -95,7 +96,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
       dueDate: newDueDate
     };
 
-    setTasks(prev => [...prev, newTask]);
+    onTasksChange(prev => [...prev, newTask]);
     
     // Reset Form
     setNewTitle('');
@@ -105,16 +106,16 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     setShowAddTaskModal(false);
   };
 
-  const getPriorityStyle = (priority: string) => {
+  const getPriorityClass = (priority: string) => {
     switch (priority) {
       case 'high':
-        return 'bg-red-500/10 text-red-400 border border-red-500/20';
+        return 'badge badge-high';
       case 'medium':
-        return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+        return 'badge badge-medium';
       case 'low':
-        return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+        return 'badge badge-low';
       default:
-        return 'bg-slate-500/10 text-slate-400 border border-slate-500/20';
+        return 'badge';
     }
   };
 
@@ -159,7 +160,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
 
           <button
             onClick={() => setShowAddTaskModal(true)}
-            className="btn-primary flex items-center gap-1.5 text-xs py-1.5 px-3"
+            className="btn-primary flex items-center gap-1.5 text-xs py-1.5 px-3 cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Add Task
           </button>
@@ -167,17 +168,17 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
       </div>
 
       {/* Grid columns */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1 items-start min-h-[500px]">
+      <div className="kanban-board flex-1 items-start min-h-[500px]">
         {columns.map(col => {
           const colTasks = filteredTasks.filter(t => t.column === col.id);
           return (
             <div
               key={col.id}
-              className={`glass-card p-3 flex flex-col h-full bg-white/2 min-h-[400px] max-h-[620px] overflow-y-auto ${col.color}`}
+              className={`kanban-column`}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, col.id)}
             >
-              <div className="flex items-center justify-between mb-3.5 pb-2 border-b border-white/5">
+              <div className="kanban-column-header">
                 <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)]">
                   {col.title}
                 </span>
@@ -186,9 +187,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 </span>
               </div>
 
-              <div className="flex-1 flex flex-col space-y-3">
+              <div className="kanban-card-list">
                 {colTasks.length === 0 ? (
-                  <div className="flex-1 border border-dashed border-white/5 rounded-xl flex items-center justify-center p-6 text-center text-[var(--text-muted)] text-[11px]">
+                  <div className="flex-1 border border-dashed border-white/5 rounded-xl flex items-center justify-center p-6 text-center text-[var(--text-muted)] text-[11px] min-h-[100px]">
                     Drag cards here
                   </div>
                 ) : (
@@ -197,17 +198,17 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                       key={task.id}
                       draggable
                       onDragStart={(e) => handleDragStart(e, task.id)}
-                      className="bg-white/4 hover:bg-white/6 border border-white/5 hover:border-[var(--border-hover)] p-3.5 rounded-xl transition-all duration-200 cursor-grab active:cursor-grabbing group relative"
+                      className="kanban-card group"
                     >
                       {/* Priority and delete */}
                       <div className="flex items-center justify-between mb-2">
-                        <span className={`text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded ${getPriorityStyle(task.priority)}`}>
+                        <span className={getPriorityClass(task.priority)}>
                           {task.priority}
                         </span>
                         
                         <button
                           onClick={() => handleDeleteTask(task.id)}
-                          className="opacity-0 group-hover:opacity-100 text-[var(--text-muted)] hover:text-red-400 transition-opacity p-0.5 rounded"
+                          className="opacity-0 group-hover:opacity-100 text-[var(--text-muted)] hover:text-red-400 transition-opacity p-0.5 rounded cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -220,7 +221,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                       </p>
 
                       {/* Metadata */}
-                      <div className="flex items-center justify-between pt-2.5 border-t border-white/5 text-[10px] text-[var(--text-muted)]">
+                      <div className="flex items-center justify-between pt-2.5 border-t border-white/5 text-[10px] text-[var(--text-muted)] font-mono">
                         <div className="flex items-center gap-1">
                           <User className="w-3 h-3 text-[var(--accent-primary)]" />
                           <span>{task.assignedTo}</span>
@@ -231,12 +232,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                         </div>
                       </div>
 
-                      {/* Mobile controller */}
-                      <div className="flex items-center justify-end gap-1 mt-2.5 pt-1.5 border-t border-dashed border-white/5 md:hidden">
+                      {/* Move controllers */}
+                      <div className="flex items-center justify-end gap-1 mt-2.5 pt-1.5 border-t border-dashed border-white/5">
                         {col.id !== 'backlog' && (
                           <button
                             onClick={() => handleMoveLeft(task.id, task.column)}
-                            className="p-1 bg-white/5 hover:bg-white/10 rounded"
+                            className="p-1 bg-white/5 hover:bg-white/10 rounded cursor-pointer"
                           >
                             <ArrowLeft className="w-3 h-3" />
                           </button>
@@ -244,7 +245,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                         {col.id !== 'done' && (
                           <button
                             onClick={() => handleMoveRight(task.id, task.column)}
-                            className="p-1 bg-white/5 hover:bg-white/10 rounded"
+                            className="p-1 bg-white/5 hover:bg-white/10 rounded cursor-pointer"
                           >
                             <ArrowRight className="w-3 h-3" />
                           </button>
@@ -349,13 +350,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowAddTaskModal(false)}
-                  className="btn-secondary text-xs py-1.5 px-3"
+                  className="btn-secondary text-xs py-1.5 px-3 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="btn-primary text-xs py-1.5 px-4"
+                  className="btn-primary text-xs py-1.5 px-4 cursor-pointer"
                 >
                   Create Task
                 </button>

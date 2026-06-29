@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, ShieldCheck, ToggleLeft, ToggleRight, Save, Sliders, Bell } from 'lucide-react';
+import { User, Save, Sliders, Bell } from 'lucide-react';
 
 interface SettingsPanelProps {
   userName: string;
@@ -85,38 +85,32 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         
         <button
           onClick={() => setActiveTab('profile')}
-          className={`glass-card p-3 text-left flex items-center space-x-3 transition-all ${
-            activeTab === 'profile'
-              ? 'border-[var(--accent-primary)] bg-white/6 text-[var(--accent-primary)]'
-              : 'border-white/5 hover:border-white/12 bg-white/2 hover:bg-white/4 text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+          className={`sidebar-item ${
+            activeTab === 'profile' ? 'sidebar-item-active' : ''
           }`}
         >
           <User className="w-4 h-4" />
-          <span className="text-xs font-bold">User Profile</span>
+          <span className="font-bold">User Profile</span>
         </button>
 
         <button
           onClick={() => setActiveTab('tuning')}
-          className={`glass-card p-3 text-left flex items-center space-x-3 transition-all ${
-            activeTab === 'tuning'
-              ? 'border-[var(--accent-primary)] bg-white/6 text-[var(--accent-primary)]'
-              : 'border-white/5 hover:border-white/12 bg-white/2 hover:bg-white/4 text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+          className={`sidebar-item ${
+            activeTab === 'tuning' ? 'sidebar-item-active' : ''
           }`}
         >
           <Sliders className="w-4 h-4" />
-          <span className="text-xs font-bold">Workspace Tuning</span>
+          <span className="font-bold">Workspace Tuning</span>
         </button>
 
         <button
           onClick={() => setActiveTab('notifications')}
-          className={`glass-card p-3 text-left flex items-center space-x-3 transition-all ${
-            activeTab === 'notifications'
-              ? 'border-[var(--accent-primary)] bg-white/6 text-[var(--accent-primary)]'
-              : 'border-white/5 hover:border-white/12 bg-white/2 hover:bg-white/4 text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+          className={`sidebar-item ${
+            activeTab === 'notifications' ? 'sidebar-item-active' : ''
           }`}
         >
           <Bell className="w-4 h-4" />
-          <span className="text-xs font-bold">Feature Flags</span>
+          <span className="font-bold">Feature Flags</span>
         </button>
       </div>
 
@@ -157,7 +151,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="btn-primary text-xs py-1.5 px-4 flex items-center gap-1.5"
+                  className="btn-primary text-xs py-1.5 px-4 flex items-center gap-1.5 cursor-pointer"
                 >
                   <Save className="w-3.5 h-3.5" /> Save Profile Details
                 </button>
@@ -174,31 +168,35 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               </div>
 
               {/* Toggle Glow Spheres */}
-              <div className="flex items-center justify-between max-w-md p-3 bg-black/15 rounded-xl border border-white/4">
+              <div className="switch-container max-w-md">
                 <div className="leading-tight">
                   <span className="text-xs font-bold text-[var(--text-primary)] block">Ambient Glow Spheres</span>
                   <span className="text-[10px] text-[var(--text-muted)]">Renders glowing floating circles in the corners.</span>
                 </div>
-                <button
-                  onClick={() => setShowGlow(!showGlow)}
-                  className="text-[var(--accent-primary)]"
-                >
-                  {showGlow ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8 text-[var(--text-muted)]" />}
-                </button>
+                <label className="switch-toggle">
+                  <input 
+                    type="checkbox" 
+                    checked={showGlow}
+                    onChange={(e) => setShowGlow(e.target.checked)}
+                  />
+                  <span className="switch-slider" />
+                </label>
               </div>
 
               {/* Toggle Grid overlay */}
-              <div className="flex items-center justify-between max-w-md p-3 bg-black/15 rounded-xl border border-white/4">
+              <div className="switch-container max-w-md">
                 <div className="leading-tight">
                   <span className="text-xs font-bold text-[var(--text-primary)] block">Mesh Grid Overlay</span>
                   <span className="text-[10px] text-[var(--text-muted)]">Displays geometric dots overlay across the screen.</span>
                 </div>
-                <button
-                  onClick={() => setShowGrid(!showGrid)}
-                  className="text-[var(--accent-primary)]"
-                >
-                  {showGrid ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8 text-[var(--text-muted)]" />}
-                </button>
+                <label className="switch-toggle">
+                  <input 
+                    type="checkbox" 
+                    checked={showGrid}
+                    onChange={(e) => setShowGrid(e.target.checked)}
+                  />
+                  <span className="switch-slider" />
+                </label>
               </div>
 
               {/* Telemetry Freq */}
@@ -208,7 +206,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   <span className="text-[10px] text-[var(--text-muted)]">Configures speed intervals of performance logs.</span>
                 </div>
                 <select
-                  className="text-xs py-1 px-2.5 bg-white/4 border border-white/8 text-[var(--accent-primary)]"
+                  className="text-xs py-1 px-2.5 bg-white/4 border border-white/8 text-[var(--accent-primary)] w-32"
                   value={updateFreq}
                   onChange={(e) => setUpdateFreq(Number(e.target.value))}
                 >
@@ -236,7 +234,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               <div className="pt-2">
                 <button
                   onClick={handleSaveTuning}
-                  className="btn-primary text-xs py-1.5 px-4 flex items-center gap-1.5"
+                  className="btn-primary text-xs py-1.5 px-4 flex items-center gap-1.5 cursor-pointer"
                 >
                   <Save className="w-3.5 h-3.5" /> Apply Workspace Settings
                 </button>
@@ -253,65 +251,56 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               </div>
 
               {/* Auto Save */}
-              <div className="flex items-center justify-between max-w-md p-3 bg-black/15 rounded-xl border border-white/4">
+              <div className="switch-container max-w-md">
                 <div className="leading-tight">
                   <span className="text-xs font-bold text-[var(--text-primary)] block">Workspace Auto-Save</span>
                   <span className="text-[10px] text-[var(--text-muted)]">Flashes save confirmations in collaborative document zones.</span>
                 </div>
-                <button
-                  onClick={() => setLocalAutoSave(!localAutoSave)}
-                  className="text-[var(--accent-primary)]"
-                >
-                  {localAutoSave ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8 text-[var(--text-muted)]" />}
-                </button>
+                <label className="switch-toggle">
+                  <input 
+                    type="checkbox" 
+                    checked={localAutoSave}
+                    onChange={(e) => setLocalAutoSave(e.target.checked)}
+                  />
+                  <span className="switch-slider" />
+                </label>
               </div>
 
               {/* Sound Alerts */}
-              <div className="flex items-center justify-between max-w-md p-3 bg-black/15 rounded-xl border border-white/4">
+              <div className="switch-container max-w-md">
                 <div className="leading-tight">
                   <span className="text-xs font-bold text-[var(--text-primary)] block">Direct Audio Alert Pings</span>
                   <span className="text-[10px] text-[var(--text-muted)]">Play subtle UI click audio when pings are received.</span>
                 </div>
-                <button
-                  onClick={() => setLocalAudioAlerts(!localAudioAlerts)}
-                  className="text-[var(--accent-primary)]"
-                >
-                  {localAudioAlerts ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8 text-[var(--text-muted)]" />}
-                </button>
+                <label className="switch-toggle">
+                  <input 
+                    type="checkbox" 
+                    checked={localAudioAlerts}
+                    onChange={(e) => setLocalAudioAlerts(e.target.checked)}
+                  />
+                  <span className="switch-slider" />
+                </label>
               </div>
 
               {/* Sync stream */}
-              <div className="flex items-center justify-between max-w-md p-3 bg-black/15 rounded-xl border border-white/4">
+              <div className="switch-container max-w-md">
                 <div className="leading-tight">
                   <span className="text-xs font-bold text-[var(--text-primary)] block">Teammate Pulse Live Stream Sync</span>
                   <span className="text-[10px] text-[var(--text-muted)]">Synchronize mock git commit streams in real-time.</span>
                 </div>
-                <button
-                  onClick={() => setLocalLiveSync(!localLiveSync)}
-                  className="text-[var(--accent-primary)]"
-                >
-                  {localLiveSync ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8 text-[var(--text-muted)]" />}
-                </button>
-              </div>
-
-              <div className="pt-2">
-                <button
-                  onClick={() => onSaveToast('Workspace feature flags updated.')}
-                  className="btn-primary text-xs py-1.5 px-4 flex items-center gap-1.5"
-                >
-                  <Save className="w-3.5 h-3.5" /> Save Flags Configuration
-                </button>
+                <label className="switch-toggle">
+                  <input 
+                    type="checkbox" 
+                    checked={localLiveSync}
+                    onChange={(e) => setLocalLiveSync(e.target.checked)}
+                  />
+                  <span className="switch-slider" />
+                </label>
               </div>
             </div>
           )}
         </div>
-
-        <div className="pt-6 mt-6 border-t border-white/5 text-[10px] text-[var(--text-muted)] flex items-center gap-1.5">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          <span>Security Audit: All settings are cached locally in standard client nodes.</span>
-        </div>
       </div>
-
     </div>
   );
 };
