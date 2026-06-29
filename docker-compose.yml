@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database for Work OS
+  techsetu-work-postgres:
+    image: postgres:15-alpine
+    container_name: techsetu-work-postgres
+    environment:
+      POSTGRES_DB: techsetu_work_os
+      POSTGRES_USER: techsetu
+      POSTGRES_PASSWORD: techsetu_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_work_data:/var/lib/postgresql/data
+    networks:
+      - techsetu-work-network
+
+  # 2. MongoDB Database for Work OS
+  techsetu-work-mongodb:
+    image: mongo:6.0
+    container_name: techsetu-work-mongodb
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb_work_data:/data/db
+    networks:
+      - techsetu-work-network
+
+  # 3. Spring Boot Backend API for Work OS
+  techsetu-work-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: techsetu-work-backend
+    depends_on:
+      - techsetu-work-postgres
+      - techsetu-work-mongodb
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://techsetu-work-postgres:5432/techsetu_work_os
+      - SPRING_DATASOURCE_USERNAME=techsetu
+      - SPRING_DATASOURCE_PASSWORD=techsetu_password
+      - SPRING_DATA_MONGODB_URI=mongodb://techsetu-work-mongodb:27017/techsetu_work_os
+      - APP_JWT_SECRET=defaultSecretKeyForTestingWhichIsVeryLongAndSecure32BytesLong
+      - APP_JWT_EXPIRATION_MS=86400000
+    networks:
+      - techsetu-work-network
+
+  # 4. React Nginx Frontend for Work OS
+  techsetu-work-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: techsetu-work-frontend
+    depends_on:
+      - techsetu-work-backend
+    ports:
+      - "3000:80"
+    networks:
+      - techsetu-work-network
+
+volumes:
+  postgres_work_data:
+  mongodb_work_data:
+
+networks:
+  techsetu-work-network:
+    driver: bridge
