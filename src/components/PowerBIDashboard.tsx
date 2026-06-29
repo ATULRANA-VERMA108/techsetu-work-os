@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { BarChart3, RefreshCw, FileSpreadsheet, Play, CheckCircle2, TrendingUp, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { BarChart3, RefreshCw, FileSpreadsheet, TrendingUp } from 'lucide-react';
 
 interface PowerBIDashboardProps {
   tasks: any[];
@@ -15,7 +15,6 @@ export const PowerBIDashboard: React.FC<PowerBIDashboardProps> = ({
   // Input fields for reports simulation
   const [targetVelocity, setTargetVelocity] = useState(80);
   const [budgetCap, setBudgetCap] = useState(50000);
-  const [marketingBudget, setMarketingBudget] = useState(15000);
   const [marketingCTR, setMarketingCTR] = useState(3.8); // CTR in %
   const [headcount, setHeadcount] = useState(12);
 
@@ -27,7 +26,6 @@ export const PowerBIDashboard: React.FC<PowerBIDashboardProps> = ({
 
   // Derived metrics from Smartsheet
   const smartsheetTotalCost = smartsheetRows.reduce((acc, row) => acc + (Number(row.cost) || 0), 0);
-  const smartsheetDoneCount = smartsheetRows.filter(row => row.status === 'Completed').length;
 
   // Derived metrics from Quickbase
   const tableNames = Object.keys(quickbaseTables);

@@ -3,7 +3,6 @@ import {
   Layers, 
   Calendar, 
   Grid, 
-  FileCode, 
   TrendingUp, 
   UserCheck, 
   CheckSquare, 
@@ -13,7 +12,6 @@ import {
   Plus,
   Play,
   Pause,
-  Trash2,
   ListTodo
 } from 'lucide-react';
 import type { Task } from './KanbanBoard';
@@ -58,7 +56,7 @@ export const SaaSIntegrationHub: React.FC<SaaSIntegrationHubProps> = ({
   // Bonsai Agency states
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
-  const [bonsaiInvoices, setBonsaiInvoices] = useState([
+  const [bonsaiInvoices] = useState([
     { id: 'inv-101', client: 'Acme Corp', amount: 3500, status: 'Paid' },
     { id: 'inv-102', client: 'Hedgehog LLC', amount: 1800, status: 'Sent' }
   ]);
