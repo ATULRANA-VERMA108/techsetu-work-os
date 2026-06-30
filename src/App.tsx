@@ -19,7 +19,13 @@ import {
   User,
   Lock,
   BarChart3,
-  Network
+  Network,
+  Target,
+  Sun,
+  Flame,
+  Zap,
+  Trophy,
+  Compass
 } from 'lucide-react';
 import { CommandLauncher } from './components/CommandLauncher';
 import { KanbanBoard } from './components/KanbanBoard';
@@ -31,6 +37,20 @@ import { SettingsPanel } from './components/SettingsPanel';
 import { SystemHealthAudit } from './components/SystemHealthAudit';
 import { PowerBIDashboard } from './components/PowerBIDashboard';
 import { SaaSIntegrationHub } from './components/SaaSIntegrationHub';
+import { CalendarPlanner } from './components/CalendarPlanner';
+
+// New Module Imports
+import { TaskManager } from './components/TaskManager';
+import { GoalTracker } from './components/GoalTracker';
+import { DailyPlanner } from './components/DailyPlanner';
+import { HabitTracker } from './components/HabitTracker';
+import { FocusMode } from './components/FocusMode';
+import { CollabWorkspace } from './components/CollabWorkspace';
+import { LifeManager } from './components/LifeManager';
+import { AutomationLab } from './components/AutomationLab';
+import { GamificationCenter } from './components/GamificationCenter';
+import { Logo } from './components/Logo';
+
 
 const DEFAULT_TASKS: Task[] = [
   {
@@ -73,9 +93,43 @@ const DEFAULT_TASKS: Task[] = [
 
 function App() {
   const [view, setView] = useState<string>('dashboard');
+  const [systemSubView, setSystemSubView] = useState<'settings' | 'stats' | 'audit' | 'powerbi' | 'saas'>('settings');
   const [theme, setTheme] = useState<string>(localStorage.getItem('techsetu-theme') || 'obsidian-aurora');
   const [isCommandOpen, setIsCommandOpen] = useState(false);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
+
+  // Global Gamification & XP State
+  const [xp, setXp] = useState<number>(() => {
+    return Number(localStorage.getItem('techsetu-xp')) || 120;
+  });
+  const [level, setLevel] = useState<number>(() => {
+    return Number(localStorage.getItem('techsetu-level')) || 1;
+  });
+  const [streak, setStreak] = useState<number>(() => {
+    return Number(localStorage.getItem('techsetu-streak')) || 4;
+  });
+
+  const handleRewardXp = (amount: number) => {
+    setXp(prev => {
+      const nextXp = prev + amount;
+      const needed = level * 300;
+      if (nextXp >= needed) {
+        setLevel(l => {
+          const nl = l + 1;
+          localStorage.setItem('techsetu-level', String(nl));
+          showToast(`Level Up! You reached Level ${nl}! 🏆`);
+          return nl;
+        });
+        const remainingXp = nextXp - needed;
+        localStorage.setItem('techsetu-xp', String(remainingXp));
+        return remainingXp;
+      }
+      localStorage.setItem('techsetu-xp', String(nextXp));
+      return nextXp;
+    });
+    showToast(`+${amount} XP Awarded ✨`);
+  };
+
 
   // Settings Panel States
   const [userName, setUserName] = useState<string>(localStorage.getItem('techsetu-username') || 'Guest User');
@@ -309,7 +363,7 @@ function App() {
   }, []);
 
   const handleAddTaskTrigger = () => {
-    setView('kanban');
+    setView('tasks');
     setShowAddTaskModal(true);
   };
 
@@ -403,9 +457,7 @@ function App() {
 
         <div className="landing-card animate-fade-in">
           <div className="flex flex-col items-center mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center shadow-lg shadow-black/40 mb-3">
-              <Layers className="w-6 h-6 text-black" />
-            </div>
+            <Logo size={48} className="mb-3" />
             <h1 className="text-2xl font-black uppercase tracking-widest text-[var(--text-primary)]">
               TechSetu <span className="text-[var(--accent-primary)]">OS</span>
             </h1>
@@ -501,9 +553,7 @@ function App() {
             {/* Sidebar Brand header */}
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
               <div className="flex items-center space-x-2.5 overflow-hidden">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center shadow-lg shadow-black/40 shrink-0">
-                  <Layers className="w-4 h-4 text-black" />
-                </div>
+                <Logo size={32} className="shrink-0" />
                 {!isSidebarCollapsed && (
                   <h1 className="text-sm font-black tracking-wider uppercase text-[var(--text-primary)] flex items-center gap-1.5">
                     TechSetu
@@ -530,13 +580,53 @@ function App() {
                 <Activity className="w-4 h-4 shrink-0" />
                 {!isSidebarCollapsed && <span>Operations Hub</span>}
               </button>
-              
+
               <button
-                onClick={() => setView('kanban')}
-                className={`sidebar-item ${view === 'kanban' ? 'sidebar-item-active' : ''}`}
+                onClick={() => setView('tasks')}
+                className={`sidebar-item ${view === 'tasks' ? 'sidebar-item-active' : ''}`}
               >
-                <Kanban className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>Flow Boards</span>}
+                <CheckSquare className="w-4 h-4 shrink-0" />
+                {!isSidebarCollapsed && <span>AI Task Manager</span>}
+              </button>
+
+              <button
+                onClick={() => setView('calendar')}
+                className={`sidebar-item ${view === 'calendar' ? 'sidebar-item-active' : ''}`}
+              >
+                <Clock className="w-4 h-4 shrink-0" />
+                {!isSidebarCollapsed && <span>Smart Scheduler</span>}
+              </button>
+
+              <button
+                onClick={() => setView('goals')}
+                className={`sidebar-item ${view === 'goals' ? 'sidebar-item-active' : ''}`}
+              >
+                <Target className="w-4 h-4 shrink-0" />
+                {!isSidebarCollapsed && <span>AI Goal Tracker</span>}
+              </button>
+
+              <button
+                onClick={() => setView('planner')}
+                className={`sidebar-item ${view === 'planner' ? 'sidebar-item-active' : ''}`}
+              >
+                <Sun className="w-4 h-4 shrink-0" />
+                {!isSidebarCollapsed && <span>Daily Planner</span>}
+              </button>
+
+              <button
+                onClick={() => setView('habits')}
+                className={`sidebar-item ${view === 'habits' ? 'sidebar-item-active' : ''}`}
+              >
+                <Flame className="w-4 h-4 shrink-0" />
+                {!isSidebarCollapsed && <span>Habit Hub</span>}
+              </button>
+
+              <button
+                onClick={() => setView('focus')}
+                className={`sidebar-item ${view === 'focus' ? 'sidebar-item-active' : ''}`}
+              >
+                <Zap className="w-4 h-4 shrink-0" />
+                {!isSidebarCollapsed && <span>Focus Engine</span>}
               </button>
 
               <button
@@ -552,47 +642,47 @@ function App() {
                 className={`sidebar-item ${view === 'docs' ? 'sidebar-item-active' : ''}`}
               >
                 <FileText className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>Wiki Documents</span>}
+                {!isSidebarCollapsed && <span>Second Brain</span>}
               </button>
 
               <button
-                onClick={() => setView('stats')}
-                className={`sidebar-item ${view === 'stats' ? 'sidebar-item-active' : ''}`}
+                onClick={() => setView('workspaces')}
+                className={`sidebar-item ${view === 'workspaces' ? 'sidebar-item-active' : ''}`}
+              >
+                <Layers className="w-4 h-4 shrink-0" />
+                {!isSidebarCollapsed && <span>Workspaces</span>}
+              </button>
+
+              <button
+                onClick={() => setView('life')}
+                className={`sidebar-item ${view === 'life' ? 'sidebar-item-active' : ''}`}
+              >
+                <Compass className="w-4 h-4 shrink-0" />
+                {!isSidebarCollapsed && <span>Life Manager</span>}
+              </button>
+
+              <button
+                onClick={() => setView('automation')}
+                className={`sidebar-item ${view === 'automation' ? 'sidebar-item-active' : ''}`}
               >
                 <Cpu className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>Telemetry Stats</span>}
+                {!isSidebarCollapsed && <span>Automation Lab</span>}
               </button>
 
               <button
-                onClick={() => setView('audit')}
-                className={`sidebar-item ${view === 'audit' ? 'sidebar-item-active' : ''}`}
+                onClick={() => setView('gamification')}
+                className={`sidebar-item ${view === 'gamification' ? 'sidebar-item-active' : ''}`}
               >
-                <ShieldCheck className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>System Audit</span>}
+                <Trophy className="w-4 h-4 shrink-0" />
+                {!isSidebarCollapsed && <span>Gamification</span>}
               </button>
 
               <button
-                onClick={() => setView('powerbi')}
-                className={`sidebar-item ${view === 'powerbi' ? 'sidebar-item-active' : ''}`}
-              >
-                <BarChart3 className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>PowerBI Reports</span>}
-              </button>
-
-              <button
-                onClick={() => setView('saas')}
-                className={`sidebar-item ${view === 'saas' ? 'sidebar-item-active' : ''}`}
-              >
-                <Network className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>SaaS Connect Hub</span>}
-              </button>
-
-              <button
-                onClick={() => setView('settings')}
-                className={`sidebar-item ${view === 'settings' ? 'sidebar-item-active' : ''}`}
+                onClick={() => setView('system')}
+                className={`sidebar-item ${view === 'system' ? 'sidebar-item-active' : ''}`}
               >
                 <Settings className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>Settings</span>}
+                {!isSidebarCollapsed && <span>System & Connect</span>}
               </button>
             </nav>
           </div>
@@ -724,7 +814,7 @@ function App() {
                       </p>
                       <div className="flex items-center gap-3 pt-3">
                         <button 
-                          onClick={() => setView('kanban')} 
+                          onClick={() => setView('tasks')} 
                           className="btn-primary text-xs cursor-pointer"
                         >
                           Launch Flow Boards
@@ -810,7 +900,7 @@ function App() {
                         Drag-and-drop or move task cards inside structured lanes.
                       </p>
                       <button 
-                        onClick={() => setView('kanban')}
+                        onClick={() => setView('tasks')}
                         className="text-[10px] font-bold text-[var(--accent-primary)] hover:underline mt-3.5 block cursor-pointer"
                       >
                         View Board Timeline →
@@ -968,13 +1058,45 @@ function App() {
               </div>
             )}
 
-            {view === 'kanban' && (
-              <KanbanBoard
+            {view === 'tasks' && (
+              <TaskManager
                 tasks={tasks}
                 onTasksChange={handleSetTasks}
                 userName={userName}
                 showAddTaskModal={showAddTaskModal}
                 setShowAddTaskModal={setShowAddTaskModal}
+                onRewardXP={handleRewardXp}
+              />
+            )}
+
+            {view === 'calendar' && (
+              <CalendarPlanner
+                tasks={tasks}
+                onAddTaskClick={handleAddTaskTrigger}
+              />
+            )}
+
+            {view === 'goals' && (
+              <GoalTracker
+                onRewardXP={handleRewardXp}
+              />
+            )}
+
+            {view === 'planner' && (
+              <DailyPlanner
+                onRewardXP={handleRewardXp}
+              />
+            )}
+
+            {view === 'habits' && (
+              <HabitTracker
+                onRewardXP={handleRewardXp}
+              />
+            )}
+
+            {view === 'focus' && (
+              <FocusMode
+                onRewardXP={handleRewardXp}
               />
             )}
 
@@ -982,45 +1104,95 @@ function App() {
 
             {view === 'docs' && <DocWorkspace jwtToken={jwtToken} customApiKey={customApiKey} />}
 
-            {view === 'stats' && <SystemStats updateFreq={updateFreq} setUpdateFreq={setUpdateFreq} jwtToken={jwtToken} />}
-
-            {view === 'audit' && <SystemHealthAudit jwtToken={jwtToken} customApiKey={customApiKey} />}
-
-            {view === 'powerbi' && (
-              <PowerBIDashboard 
-                tasks={tasks} 
-                smartsheetRows={smartsheetRows} 
-                quickbaseTables={quickbaseTables} 
+            {view === 'workspaces' && (
+              <CollabWorkspace
+                onRewardXP={handleRewardXp}
               />
             )}
 
-            {view === 'saas' && (
-              <SaaSIntegrationHub 
-                tasks={tasks} 
-                onTasksChange={handleSetTasks} 
-                smartsheetRows={smartsheetRows} 
-                setSmartsheetRows={setSmartsheetRows} 
-                quickbaseTables={quickbaseTables} 
-                setQuickbaseTables={setQuickbaseTables} 
+            {view === 'life' && (
+              <LifeManager
+                onRewardXP={handleRewardXp}
               />
             )}
 
-            {view === 'settings' && (
-              <SettingsPanel
-                userName={userName}
-                setUserName={setUserName}
-                userRole={userRole}
-                setUserRole={setUserRole}
-                showGlow={showGlow}
-                setShowGlow={setShowGlow}
-                showGrid={showGrid}
-                setShowGrid={setShowGrid}
-                updateFreq={updateFreq}
-                setUpdateFreq={setUpdateFreq}
-                onSaveToast={showToast}
-                customApiKey={customApiKey}
-                setCustomApiKey={setCustomApiKey}
+            {view === 'automation' && (
+              <AutomationLab
+                onRewardXP={handleRewardXp}
               />
+            )}
+
+            {view === 'gamification' && (
+              <GamificationCenter
+                xp={xp}
+                level={level}
+                streak={streak}
+              />
+            )}
+
+            {view === 'system' && (
+              <div className="space-y-6">
+                <div className="glass-card p-3 bg-white/2 border border-white/5 rounded-2xl flex flex-wrap gap-1">
+                  {[
+                    { id: 'settings', label: 'Settings Panel' },
+                    { id: 'stats', label: 'Telemetry Stats' },
+                    { id: 'audit', label: 'System Health Audit' },
+                    { id: 'saas', label: 'SaaS Connect Hub' },
+                    { id: 'powerbi', label: 'PowerBI Reports' }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setSystemSubView(tab.id as any)}
+                      className={`flex-grow py-2.5 px-3 rounded-xl text-xs uppercase font-bold tracking-wider transition-all cursor-pointer ${
+                        systemSubView === tab.id
+                          ? 'bg-gradient-to-r from-[var(--accent-primary)]/20 to-[var(--accent-secondary)]/20 text-white border border-[var(--accent-primary)]/30'
+                          : 'text-[var(--text-secondary)] hover:text-white hover:bg-white/4'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="animate-fade-in">
+                  {systemSubView === 'settings' && (
+                    <SettingsPanel
+                      userName={userName}
+                      setUserName={setUserName}
+                      userRole={userRole}
+                      setUserRole={setUserRole}
+                      showGlow={showGlow}
+                      setShowGlow={setShowGlow}
+                      showGrid={showGrid}
+                      setShowGrid={setShowGrid}
+                      updateFreq={updateFreq}
+                      setUpdateFreq={setUpdateFreq}
+                      onSaveToast={showToast}
+                      customApiKey={customApiKey}
+                      setCustomApiKey={setCustomApiKey}
+                    />
+                  )}
+                  {systemSubView === 'stats' && <SystemStats updateFreq={updateFreq} setUpdateFreq={setUpdateFreq} jwtToken={jwtToken} />}
+                  {systemSubView === 'audit' && <SystemHealthAudit jwtToken={jwtToken} customApiKey={customApiKey} />}
+                  {systemSubView === 'powerbi' && (
+                    <PowerBIDashboard 
+                      tasks={tasks} 
+                      smartsheetRows={smartsheetRows} 
+                      quickbaseTables={quickbaseTables} 
+                    />
+                  )}
+                  {systemSubView === 'saas' && (
+                    <SaaSIntegrationHub 
+                      tasks={tasks} 
+                      onTasksChange={handleSetTasks} 
+                      smartsheetRows={smartsheetRows} 
+                      setSmartsheetRows={setSmartsheetRows} 
+                      quickbaseTables={quickbaseTables} 
+                      setQuickbaseTables={setQuickbaseTables} 
+                    />
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </main>
