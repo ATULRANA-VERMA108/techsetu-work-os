@@ -964,3 +964,80 @@ input::placeholder, textarea::placeholder {
   background: rgba(255, 255, 255, 0.04);
 }
 
+/* ==========================================
+   VISIBILITY AND ACCESSIBILITY OVERRIDES
+   ========================================== */
+
+/* Universal Button Reset to prevent default browser white backgrounds */
+button {
+  background: none;
+  color: inherit;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+  text-align: left;
+}
+
+/* Button Active / Inactive states for high contrast visibility */
+.btn-active-primary {
+  background-color: rgba(var(--accent-primary-rgb), 0.15) !important;
+  color: var(--accent-primary) !important;
+  border: 1px solid rgba(var(--accent-primary-rgb), 0.35) !important;
+  border-radius: 12px;
+}
+
+.btn-active-secondary {
+  background-color: rgba(var(--accent-secondary-rgb), 0.15) !important;
+  color: var(--accent-secondary) !important;
+  border: 1px solid rgba(var(--accent-secondary-rgb), 0.35) !important;
+  border-radius: 12px;
+}
+
+.btn-active-tertiary {
+  background-color: rgba(var(--accent-tertiary-rgb), 0.15) !important;
+  color: var(--accent-tertiary) !important;
+  border: 1px solid rgba(var(--accent-tertiary-rgb), 0.35) !important;
+  border-radius: 12px;
+}
+
+.btn-inactive {
+  background-color: rgba(0, 0, 0, 0.35) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 12px;
+}
+
+.btn-inactive:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Kid Mode Styles Overrides */
+.kids-theme {
+  --font-sans: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  --bg-primary: #0a0b1e;
+  --bg-secondary: #111335;
+  --accent-primary: #00ffcc;
+  --accent-secondary: #ff3366;
+  --accent-tertiary: #ffcc00;
+}
+
+.kids-mode-card {
+  border-width: 2px !important;
+  border-color: rgba(var(--accent-primary-rgb), 0.25) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.6), 0 0 25px rgba(var(--accent-primary-rgb), 0.15) !important;
+}
+
+.kids-mode-button {
+  font-size: 13px !important;
+  padding: 12px 24px !important;
+  border-radius: 16px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+}
+
+

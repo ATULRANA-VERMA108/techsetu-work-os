@@ -25,9 +25,10 @@ interface Goal {
 
 interface GoalTrackerProps {
   onRewardXP: (xp: number) => void;
+  isEasyMode?: boolean;
 }
 
-export const GoalTracker: React.FC<GoalTrackerProps> = ({ onRewardXP }) => {
+export const GoalTracker: React.FC<GoalTrackerProps> = ({ onRewardXP, isEasyMode = false }) => {
   const [activeTier, setActiveTier] = useState<Goal['tier']>('annual');
   const [goals, setGoals] = useState<Goal[]>([
     {
@@ -197,6 +198,271 @@ export const GoalTracker: React.FC<GoalTrackerProps> = ({ onRewardXP }) => {
   };
 
   const aiAnalysis = getAIAnalysis(selectedGoal);
+
+  // ==========================================
+  // KIDS MODE / EASY MODE VIEW
+  // ==========================================
+  const [kidsFilter, setKidsFilter] = useState<'dreams' | 'wishes' | 'stars'>('dreams');
+  
+  if (isEasyMode) {
+    const kidsGoals = goals.filter(g => {
+      if (kidsFilter === 'dreams') return g.tier === 'vision' || g.tier === 'annual';
+      if (kidsFilter === 'wishes') return g.tier === 'monthly';
+      return g.tier === 'weekly' || g.tier === 'daily';
+    });
+
+    const selectedKidsGoal = kidsGoals.find(g => g.id === selectedGoal.id) || kidsGoals[0] || goals[0];
+
+    const getKidsCategoryIcon = (cat: Goal['category']) => {
+      switch (cat) {
+        case 'learning': return '🎨';
+        case 'fitness': return '🏃';
+        case 'financial': return '💰';
+        case 'personal': return '🧸';
+        default: return '🎯';
+      }
+    };
+
+    const getKidsCategoryLabel = (cat: Goal['category']) => {
+      switch (cat) {
+        case 'learning': return 'School & Study';
+        case 'fitness': return 'Play & Sports';
+        case 'financial': return 'Savings Piggybank';
+        case 'personal': return 'Fun & Hobby';
+        default: return 'Dream Objective';
+      }
+    };
+
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 kids-theme animate-fade-in">
+        
+        {/* Left Column: Kids Dream Dashboard */}
+        <div className="lg:col-span-2 space-y-6">
+          
+          {/* Kids Tab Navigation */}
+          <div className="glass-card p-3.5 bg-white/2 border-2 border-white/8 rounded-3xl flex gap-3">
+            <button
+              onClick={() => setKidsFilter('dreams')}
+              className={`flex-1 py-3 px-4 rounded-2xl text-xs font-bold text-center justify-center flex items-center gap-2 cursor-pointer transition-all ${
+                kidsFilter === 'dreams' ? 'btn-active-primary' : 'btn-inactive'
+              }`}
+              title="View my long term dreams (Many years)"
+            >
+              <span>🌈 My Big Dreams</span>
+            </button>
+            <button
+              onClick={() => setKidsFilter('wishes')}
+              className={`flex-1 py-3 px-4 rounded-2xl text-xs font-bold text-center justify-center flex items-center gap-2 cursor-pointer transition-all ${
+                kidsFilter === 'wishes' ? 'btn-active-secondary' : 'btn-inactive'
+              }`}
+              title="View my monthly wishes (This month)"
+            >
+              <span>🗓️ My Monthly Wishes</span>
+            </button>
+            <button
+              onClick={() => setKidsFilter('stars')}
+              className={`flex-1 py-3 px-4 rounded-2xl text-xs font-bold text-center justify-center flex items-center gap-2 cursor-pointer transition-all ${
+                kidsFilter === 'stars' ? 'btn-active-tertiary' : 'btn-inactive'
+              }`}
+              title="View my weekly check-off tasks (This week)"
+            >
+              <span>⭐ My Weekly Stars</span>
+            </button>
+          </div>
+
+          {/* Kids Dream Cards list */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center px-1">
+              <h3 className="text-xs font-black uppercase tracking-wider text-[var(--text-primary)] flex items-center gap-2">
+                <Target className="w-4 h-4 text-[var(--accent-primary)] animate-pulse" />
+                {kidsFilter === 'dreams' ? 'My Lifetime Dreams List' : kidsFilter === 'wishes' ? 'My Monthly Goals' : 'My Weekly To-Do Stars'}
+              </h3>
+              <span className="text-[10px] font-bold text-[var(--accent-primary)] bg-[var(--accent-primary)]/15 border border-[var(--accent-primary)]/20 px-2 py-0.5 rounded-full">
+                {kidsGoals.length} Active
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {kidsGoals.length === 0 ? (
+                <div className="col-span-2 glass-card p-8 bg-white/2 border border-white/5 rounded-2xl text-center text-[var(--text-secondary)]">
+                  <p className="text-xs font-bold mb-2">No dream cards here yet! 🌟</p>
+                  <p className="text-[10px] text-[var(--text-muted)]">Type a new dream in the builder box below to get started!</p>
+                </div>
+              ) : (
+                kidsGoals.map(g => (
+                  <div
+                    key={g.id}
+                    onClick={() => setSelectedGoalId(g.id)}
+                    className={`glass-card p-5 bg-white/2 border-2 rounded-2xl transition-all cursor-pointer flex flex-col justify-between hover:-translate-y-0.5 ${
+                      selectedKidsGoal.id === g.id
+                        ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5'
+                        : 'border-white/5 hover:border-white/12'
+                    }`}
+                  >
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-start">
+                        <span className="text-2xl">{getKidsCategoryIcon(g.category)}</span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-black/40 border border-white/8 rounded-md text-[var(--text-secondary)]">
+                          {getKidsCategoryLabel(g.category)}
+                        </span>
+                      </div>
+                      
+                      <h4 className="text-xs font-black text-white leading-relaxed">{g.title}</h4>
+                      
+                      {/* Kids Milestone checklist */}
+                      <div className="space-y-1.5 pt-2">
+                        {g.milestones.map((m, idx) => (
+                          <div
+                            key={idx}
+                            onClick={(e) => { e.stopPropagation(); toggleMilestone(g.id, idx); }}
+                            className="flex items-center justify-between p-2 bg-black/30 border border-white/4 rounded-xl hover:bg-black/50 transition-colors"
+                          >
+                            <span className="text-[10px] text-[var(--text-secondary)] font-medium pr-2">{m.text}</span>
+                            <span className="text-xs shrink-0 cursor-pointer">{m.done ? '✅' : '⚪'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Progress stars bar */}
+                    <div className="mt-4 pt-3 border-t border-white/5 space-y-1">
+                      <div className="flex justify-between items-center text-[9px] font-bold text-[var(--text-secondary)]">
+                        <span>Dream Progress:</span>
+                        <span className="text-[var(--accent-primary)] font-mono">{g.progress}%</span>
+                      </div>
+                      <div className="h-2 bg-black/40 rounded-full overflow-hidden border border-white/8">
+                        <div
+                          className="h-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] rounded-full transition-all duration-500"
+                          style={{ width: `${g.progress}%` }}
+                        />
+                      </div>
+                      <div className="flex gap-1 pt-1 justify-center">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <span key={i} className="text-xs">
+                            {g.progress >= (i + 1) * 20 ? '⭐' : '☆'}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Kids Goal Creator Form */}
+          <form onSubmit={handleAddGoal} className="glass-card p-5 bg-gradient-to-br from-white/2 to-black/35 border-2 border-white/10 rounded-3xl space-y-4">
+            <h4 className="text-xs font-black uppercase tracking-wider text-[var(--text-primary)] flex items-center gap-1.5">
+              <span>🎯 Create a New Dream Card</span>
+            </h4>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="sm:col-span-3">
+                <label className="text-[9.5px] uppercase font-bold text-[var(--text-secondary)] block mb-1">What is your next big dream? 🎯</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Learn to ride a bicycle, read my first coding book..."
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  required
+                  className="w-full bg-black/40 border border-white/8 rounded-xl py-2.5 px-3.5 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-[9.5px] uppercase font-bold text-[var(--text-secondary)] block mb-1">How long will this take? ⏳</label>
+                <select
+                  value={newTier}
+                  onChange={(e) => setNewTier(e.target.value as Goal['tier'])}
+                  className="w-full bg-black/40 border border-white/8 rounded-xl py-2 px-3 text-xs text-[var(--text-secondary)] focus:outline-none"
+                >
+                  <option value="vision">🌈 Long Term Dream (Years)</option>
+                  <option value="monthly">🗓️ Monthly Wish (Months)</option>
+                  <option value="weekly">⭐ Weekly Star (This Week)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[9.5px] uppercase font-bold text-[var(--text-secondary)] block mb-1">Category 🧩</label>
+                <select
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value as Goal['category'])}
+                  className="w-full bg-black/40 border border-white/8 rounded-xl py-2 px-3 text-xs text-[var(--text-secondary)] focus:outline-none"
+                >
+                  <option value="learning">🎨 School & Study</option>
+                  <option value="fitness">🏃 Play & Sports</option>
+                  <option value="personal">🧸 Fun & Hobby</option>
+                  <option value="financial">💰 Savings Piggybank</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[9.5px] uppercase font-bold text-[var(--text-secondary)] block mb-1">Target Date 📅</label>
+                <input
+                  type="date"
+                  value={newDate}
+                  onChange={(e) => setNewDate(e.target.value)}
+                  className="w-full bg-black/40 border border-white/8 rounded-xl py-1.5 px-3 text-xs text-[var(--text-secondary)] focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <button type="submit" className="btn-primary w-full text-xs py-3 px-4 rounded-2xl flex items-center justify-center gap-1.5 cursor-pointer font-bold">
+              <Plus className="w-4 h-4" /> Save My Dream Card! 🚀
+            </button>
+          </form>
+
+        </div>
+
+        {/* Right Column: AI Mascot Copilot */}
+        <div className="lg:col-span-1">
+          <div className="glass-card p-6 bg-gradient-to-br from-white/2 to-black/45 border-2 border-white/8 rounded-3xl h-full flex flex-col justify-between">
+            <div className="space-y-5">
+              <div className="flex items-center gap-2 pb-3.5 border-b border-white/5">
+                <span className="text-xl">🤖</span>
+                <h3 className="text-xs font-black uppercase tracking-wider text-white">Setu the Dream Co-pilot</h3>
+              </div>
+
+              {selectedKidsGoal ? (
+                <div className="space-y-4">
+                  <div className="p-4 bg-black/40 border border-white/6 rounded-2xl space-y-1">
+                    <span className="text-[8px] font-mono text-[var(--accent-primary)] uppercase tracking-wider block">Auditing Dream</span>
+                    <span className="text-xs font-bold text-white leading-relaxed">{selectedKidsGoal.title}</span>
+                  </div>
+
+                  {/* Character Avatar simulation speech */}
+                  <div className="p-4 bg-[var(--accent-primary)]/5 border border-[var(--accent-primary)]/10 rounded-2xl relative">
+                    <div className="text-xs leading-relaxed text-[var(--text-primary)] font-semibold">
+                      "Hey Super Star! I looked at your dream: <strong>'{selectedKidsGoal.title}'</strong>. You have completed <strong>{Math.round(selectedKidsGoal.progress / 20)} stars</strong> so far! I think you are doing amazing, keep it up! 🌈"
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 p-4 bg-[var(--accent-tertiary)]/5 border border-[var(--accent-tertiary)]/15 rounded-2xl">
+                    <span className="text-[9px] font-mono text-[var(--accent-tertiary)] uppercase tracking-wider block font-bold">
+                      💡 Setu recommends:
+                    </span>
+                    <p className="text-[11px] text-[var(--text-primary)] font-bold leading-relaxed mt-1">
+                      {selectedKidsGoal.category === 'learning' ? 'Grab your notebook and read for 10 minutes today! 📖' :
+                       selectedKidsGoal.category === 'fitness' ? 'Put on your shoes and do 10 minutes of outdoor play! 🏃' :
+                       selectedKidsGoal.category === 'financial' ? 'Add 1 coin to your piggybank savings jar today! 🪙' :
+                       'Help tidy up your focus study desk! 🧹'}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-6 text-[var(--text-secondary)] text-xs">
+                  "Click on any dream card on the left and I will guide you! 🤖"
+                </div>
+              )}
+            </div>
+
+            <div className="pt-4 border-t border-white/5 flex items-center justify-between text-[9px] text-[var(--text-muted)] font-mono mt-4">
+              <span>Goal Advisor active</span>
+              <span>Level: Super Star</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -98,6 +98,19 @@ function App() {
   const [isCommandOpen, setIsCommandOpen] = useState(false);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
 
+  // Global Kids Mode / Easy Mode State
+  const [isEasyMode, setIsEasyMode] = useState<boolean>(() => {
+    return localStorage.getItem('techsetu-easymode') === 'true';
+  });
+
+  const toggleEasyMode = () => {
+    setIsEasyMode(prev => {
+      const next = !prev;
+      localStorage.setItem('techsetu-easymode', String(next));
+      return next;
+    });
+  };
+
   // Global Gamification & XP State
   const [xp, setXp] = useState<number>(() => {
     return Number(localStorage.getItem('techsetu-xp')) || 120;
@@ -571,118 +584,164 @@ function App() {
               </button>
             </div>
 
+            {/* Kids Mode Toggle */}
+            {!isSidebarCollapsed ? (
+              <div className="mx-2 p-2.5 flex items-center justify-between bg-black/40 border border-white/8 rounded-xl">
+                <span className="text-[10px] font-black text-pink-400 flex items-center gap-1.5 uppercase tracking-wider">
+                  🧸 Kids Mode
+                </span>
+                <button
+                  onClick={toggleEasyMode}
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    isEasyMode ? 'bg-pink-500 animate-pulse' : 'bg-white/10'
+                  }`}
+                  title="Toggle simplified Kids Mode / Easy Mode interface"
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      isEasyMode ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={toggleEasyMode}
+                className={`w-9 h-9 mx-auto rounded-xl flex items-center justify-center border transition-all cursor-pointer ${
+                  isEasyMode ? 'bg-pink-500/20 border-pink-500/40 text-pink-400' : 'bg-white/2 border-white/6 text-[var(--text-secondary)] hover:text-white'
+                }`}
+                title="Toggle simplified Kids Mode / Easy Mode interface"
+              >
+                🧸
+              </button>
+            )}
+
             {/* Sidebar Menu items */}
             <nav className="sidebar-menu">
               <button
                 onClick={() => setView('dashboard')}
                 className={`sidebar-item ${view === 'dashboard' ? 'sidebar-item-active' : ''}`}
+                title="Operations Hub - See my stats, daily trends, and overall growth"
               >
-                <Activity className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>Operations Hub</span>}
+                <Activity className="w-4 h-4 shrink-0 text-sky-400" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'My Space Dashboard 🏠' : 'Operations Hub'}</span>}
               </button>
 
               <button
                 onClick={() => setView('tasks')}
                 className={`sidebar-item ${view === 'tasks' ? 'sidebar-item-active' : ''}`}
+                title="AI Task Manager - Write my play and study checklists"
               >
-                <CheckSquare className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>AI Task Manager</span>}
+                <CheckSquare className="w-4 h-4 shrink-0 text-emerald-400" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'My To-Do Stars ⭐' : 'AI Task Manager'}</span>}
               </button>
 
               <button
                 onClick={() => setView('calendar')}
                 className={`sidebar-item ${view === 'calendar' ? 'sidebar-item-active' : ''}`}
+                title="Smart Scheduler - View dates and times for play and work"
               >
-                <Clock className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>Smart Scheduler</span>}
+                <Clock className="w-4 h-4 shrink-0 text-amber-400" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'My Play Calendar 📅' : 'Smart Scheduler'}</span>}
               </button>
 
               <button
                 onClick={() => setView('goals')}
                 className={`sidebar-item ${view === 'goals' ? 'sidebar-item-active' : ''}`}
+                title="AI Goal Tracker - Write my wishes and lifetime dreams"
               >
-                <Target className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>AI Goal Tracker</span>}
+                <Target className="w-4 h-4 shrink-0 text-pink-500" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'My Big Dreams 🎯' : 'AI Goal Tracker'}</span>}
               </button>
 
               <button
                 onClick={() => setView('planner')}
                 className={`sidebar-item ${view === 'planner' ? 'sidebar-item-active' : ''}`}
+                title="Daily Planner - Plan my morning play and night reflections"
               >
-                <Sun className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>Daily Planner</span>}
+                <Sun className="w-4 h-4 shrink-0 text-yellow-400" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'My Day Plan ☀️' : 'Daily Planner'}</span>}
               </button>
 
               <button
                 onClick={() => setView('habits')}
                 className={`sidebar-item ${view === 'habits' ? 'sidebar-item-active' : ''}`}
+                title="Habits Hub - Build daily habits streaks"
               >
-                <Flame className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>Habit Hub</span>}
+                <Flame className="w-4 h-4 shrink-0 text-orange-500 animate-pulse" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'My Daily Habits 🍀' : 'Habit Hub'}</span>}
               </button>
 
               <button
                 onClick={() => setView('focus')}
                 className={`sidebar-item ${view === 'focus' ? 'sidebar-item-active' : ''}`}
+                title="Focus Engine - Run Pomodoro study timer with fun music sounds"
               >
-                <Zap className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>Focus Engine</span>}
+                <Zap className="w-4 h-4 shrink-0 text-purple-400" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'Focus Timer ⏱️' : 'Focus Engine'}</span>}
               </button>
 
               <button
                 onClick={() => setView('ai')}
                 className={`sidebar-item ${view === 'ai' ? 'sidebar-item-active' : ''}`}
+                title="AI Co-Pilots - Talk to my intelligent robot friends"
               >
-                <Bot className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>AI Co-Pilots</span>}
+                <Bot className="w-4 h-4 shrink-0 text-teal-400" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'My AI Friends 🤖' : 'AI Co-Pilots'}</span>}
               </button>
 
               <button
                 onClick={() => setView('docs')}
                 className={`sidebar-item ${view === 'docs' ? 'sidebar-item-active' : ''}`}
+                title="Second Brain - Write notes and documents"
               >
-                <FileText className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>Second Brain</span>}
+                <FileText className="w-4 h-4 shrink-0 text-blue-400" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'My Notebook 📝' : 'Second Brain'}</span>}
               </button>
 
               <button
                 onClick={() => setView('workspaces')}
                 className={`sidebar-item ${view === 'workspaces' ? 'sidebar-item-active' : ''}`}
+                title="Workspaces - Chat with team members and friends"
               >
-                <Layers className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>Workspaces</span>}
+                <Layers className="w-4 h-4 shrink-0 text-indigo-400" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'My Team Chat 🤝' : 'Workspaces'}</span>}
               </button>
 
               <button
                 onClick={() => setView('life')}
                 className={`sidebar-item ${view === 'life' ? 'sidebar-item-active' : ''}`}
+                title="Life Manager - Track books, meal plans, and piggybank savings"
               >
-                <Compass className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>Life Manager</span>}
+                <Compass className="w-4 h-4 shrink-0 text-rose-400" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'My Wish & Cash 💰' : 'Life Manager'}</span>}
               </button>
 
               <button
                 onClick={() => setView('automation')}
                 className={`sidebar-item ${view === 'automation' ? 'sidebar-item-active' : ''}`}
+                title="Automation Lab - Create trigger-action zaps"
               >
-                <Cpu className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>Automation Lab</span>}
+                <Cpu className="w-4 h-4 shrink-0 text-green-400" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'Magic Actions ⚡' : 'Automation Lab'}</span>}
               </button>
 
               <button
                 onClick={() => setView('gamification')}
                 className={`sidebar-item ${view === 'gamification' ? 'sidebar-item-active' : ''}`}
+                title="Gamification - Check XP points, levels, and leaderboards"
               >
-                <Trophy className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>Gamification</span>}
+                <Trophy className="w-4 h-4 shrink-0 text-amber-500" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'My Levels & Badges 🏆' : 'Gamification'}</span>}
               </button>
 
               <button
                 onClick={() => setView('system')}
                 className={`sidebar-item ${view === 'system' ? 'sidebar-item-active' : ''}`}
+                title="System Settings - Change user profile and interface themes"
               >
-                <Settings className="w-4 h-4 shrink-0" />
-                {!isSidebarCollapsed && <span>System & Connect</span>}
+                <Settings className="w-4 h-4 shrink-0 text-gray-400" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'Settings & Themes ⚙️' : 'System & Connect'}</span>}
               </button>
             </nav>
           </div>
@@ -1079,12 +1138,14 @@ function App() {
             {view === 'goals' && (
               <GoalTracker
                 onRewardXP={handleRewardXp}
+                isEasyMode={isEasyMode}
               />
             )}
 
             {view === 'planner' && (
               <DailyPlanner
                 onRewardXP={handleRewardXp}
+                isEasyMode={isEasyMode}
               />
             )}
 

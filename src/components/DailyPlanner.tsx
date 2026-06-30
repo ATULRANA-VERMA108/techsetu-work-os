@@ -17,9 +17,10 @@ import {
 
 interface DailyPlannerProps {
   onRewardXP: (xp: number) => void;
+  isEasyMode?: boolean;
 }
 
-export const DailyPlanner: React.FC<DailyPlannerProps> = ({ onRewardXP }) => {
+export const DailyPlanner: React.FC<DailyPlannerProps> = ({ onRewardXP, isEasyMode = false }) => {
   const [plannerTab, setPlannerTab] = useState<'morning' | 'night'>('morning');
   const [whatWentWell, setWhatWentWell] = useState('');
   const [timeWasted, setTimeWasted] = useState('');
@@ -30,13 +31,17 @@ export const DailyPlanner: React.FC<DailyPlannerProps> = ({ onRewardXP }) => {
       date: 'June 29, 2026',
       score: 85,
       mood: 'happy',
-      insight: 'Starting developer sprint tasks immediately at 8 AM boosted flow velocity by 30%.'
+      insight: isEasyMode 
+        ? 'Great job starting play goals early yesterday morning! Keep up the stars! ⭐'
+        : 'Starting developer sprint tasks immediately at 8 AM boosted flow velocity by 30%.'
     },
     {
       date: 'June 28, 2026',
       score: 60,
       mood: 'tired',
-      insight: 'Context-switching to customer support syncs reduced developer focus. Suggest batching emails.'
+      insight: isEasyMode
+        ? 'Too much screen games time took away your focus. Let\'s try setting a timer today! 👾'
+        : 'Context-switching to customer support syncs reduced developer focus. Suggest batching emails.'
     }
   ]);
   const [generatedInsight, setGeneratedInsight] = useState<string | null>(null);
@@ -47,11 +52,17 @@ export const DailyPlanner: React.FC<DailyPlannerProps> = ({ onRewardXP }) => {
 
     // Simulate AI insight generator based on input
     setTimeout(() => {
-      let insight = 'You maintained focus during technical phases, but meeting configurations dragged efficiency. Try setting focus blocks.';
-      if (whatWentWell.toLowerCase().includes('code') || whatWentWell.toLowerCase().includes('programming')) {
-        insight = 'Your coding cycles are highly efficient when aligned with lofi focus audios. Keep shielding these slots.';
-      } else if (timeWasted.toLowerCase().includes('youtube') || timeWasted.toLowerCase().includes('social')) {
-        insight = 'Distractions accounted for a 15% dip. Leverage the Site Blocker inside Focus Mode to seal this gap.';
+      let insight = isEasyMode 
+        ? 'Fantastic! You did awesome activities today. Keep doing what makes you happy! ✨'
+        : 'You maintained focus during technical phases, but meeting configurations dragged efficiency. Try setting focus blocks.';
+      if (whatWentWell.toLowerCase().includes('code') || whatWentWell.toLowerCase().includes('play') || whatWentWell.toLowerCase().includes('study')) {
+        insight = isEasyMode
+          ? 'Super star! Studying and playing are best done in blocks. You earned extra level points! 🏅'
+          : 'Your coding cycles are highly efficient when aligned with lofi focus audios. Keep shielding these slots.';
+      } else if (timeWasted.toLowerCase().includes('youtube') || timeWasted.toLowerCase().includes('game') || timeWasted.toLowerCase().includes('social')) {
+        insight = isEasyMode
+          ? 'Remember to take play breaks so you do not get tired! Use your Focus Space timer. ⏱️'
+          : 'Distractions accounted for a 15% dip. Leverage the Site Blocker inside Focus Mode to seal this gap.';
       }
 
       const newLog = {
@@ -69,7 +80,32 @@ export const DailyPlanner: React.FC<DailyPlannerProps> = ({ onRewardXP }) => {
     }, 800);
   };
 
-  const morningSlots = [
+  const morningSlots = isEasyMode ? [
+    {
+      time: '08:00 AM - 09:30 AM',
+      title: 'Study Time: Learn coding & drawing! 🎨',
+      type: 'focus',
+      description: 'Zero distractions, complete check-off tasks, earn achievement badges.'
+    },
+    {
+      time: '09:30 AM - 10:00 AM',
+      title: 'Water break & stretch play 🧸',
+      type: 'break',
+      description: 'Stretch, light walk, drink 1 cup of water.'
+    },
+    {
+      time: '10:00 AM - 11:30 AM',
+      title: 'Creative play: Build Lego model nodes 🧱',
+      type: 'work',
+      description: 'Train your brain with puzzle building blocks.'
+    },
+    {
+      time: '11:30 AM - 12:30 PM',
+      title: 'Family sync: Share what you built! 🗣️',
+      type: 'meeting',
+      description: 'Show your dreams milestones to your parents and friends.'
+    }
+  ] : [
     {
       time: '08:00 AM - 09:30 AM',
       title: 'Deep Work: Vector RAG Core Architecture Coding',
@@ -113,24 +149,22 @@ export const DailyPlanner: React.FC<DailyPlannerProps> = ({ onRewardXP }) => {
           <button
             onClick={() => setPlannerTab('morning')}
             className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
-              plannerTab === 'morning'
-                ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20'
-                : 'text-[var(--text-secondary)] hover:text-white'
+              plannerTab === 'morning' ? 'btn-active-primary' : 'btn-inactive'
             }`}
+            title="Switch to morning daily plan layout"
           >
             <Sun className="w-4 h-4" />
-            <span>Morning "Perfect Day" Plan</span>
+            <span>{isEasyMode ? 'My Day Plan ☀️' : 'Morning "Perfect Day" Plan'}</span>
           </button>
           <button
             onClick={() => setPlannerTab('night')}
             className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
-              plannerTab === 'night'
-                ? 'bg-[var(--accent-secondary)]/10 text-[var(--accent-secondary)] border border-[var(--accent-secondary)]/20'
-                : 'text-[var(--text-secondary)] hover:text-white'
+              plannerTab === 'night' ? 'btn-active-secondary' : 'btn-inactive'
             }`}
+            title="Switch to night reflection log form"
           >
             <Moon className="w-4 h-4" />
-            <span>Night Reflection & Insights</span>
+            <span>{isEasyMode ? 'My Reflection 🌙' : 'Night Reflection & Insights'}</span>
           </button>
         </div>
 
@@ -140,9 +174,11 @@ export const DailyPlanner: React.FC<DailyPlannerProps> = ({ onRewardXP }) => {
             <div className="flex justify-between items-center px-1">
               <h3 className="text-xs font-black uppercase tracking-wider text-[var(--text-primary)] flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-[var(--accent-primary)] animate-pulse" />
-                AI Generated Ideal Work Sequence
+                {isEasyMode ? 'My Fun Activity Checklist' : 'AI Generated Ideal Work Sequence'}
               </h3>
-              <span className="text-[9px] font-mono text-[var(--accent-primary)] bg-[var(--accent-primary)]/15 border border-[var(--accent-primary)]/20 px-2 py-0.5 rounded-full">Energy Optimised</span>
+              <span className="text-[9px] font-mono text-[var(--accent-primary)] bg-[var(--accent-primary)]/15 border border-[var(--accent-primary)]/20 px-2 py-0.5 rounded-full">
+                {isEasyMode ? 'Super Star Mode ⭐' : 'Energy Optimised'}
+              </span>
             </div>
 
             <div className="space-y-3">
@@ -178,15 +214,17 @@ export const DailyPlanner: React.FC<DailyPlannerProps> = ({ onRewardXP }) => {
             <form onSubmit={handleNightSubmit} className="glass-card p-5 bg-white/2 border border-white/5 rounded-2xl space-y-4">
               <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-2 border-b border-white/5 pb-2.5">
                 <Moon className="w-4 h-4 text-[var(--accent-secondary)]" />
-                Workspace Night Reflection Log
+                {isEasyMode ? 'My Star Score & Sleep Journal 🌙' : 'Workspace Night Reflection Log'}
               </h3>
 
               <div className="space-y-3">
                 <div>
-                  <label className="text-[9.5px] uppercase font-bold text-[var(--text-secondary)] block mb-1">What went well today?</label>
+                  <label className="text-[9.5px] uppercase font-bold text-[var(--text-secondary)] block mb-1">
+                    {isEasyMode ? 'What did you enjoy most today? 💖' : 'What went well today?'}
+                  </label>
                   <textarea
                     rows={2}
-                    placeholder="e.g. Cleared 4 backlog sprint tickets, ran custom API queries successfully..."
+                    placeholder={isEasyMode ? 'I finished my study checklist, played Lego blocks...' : 'e.g. Cleared 4 backlog sprint tickets, ran custom API queries successfully...'}
                     value={whatWentWell}
                     onChange={(e) => setWhatWentWell(e.target.value)}
                     required
@@ -195,10 +233,12 @@ export const DailyPlanner: React.FC<DailyPlannerProps> = ({ onRewardXP }) => {
                 </div>
 
                 <div>
-                  <label className="text-[9.5px] uppercase font-bold text-[var(--text-secondary)] block mb-1">What wasted your time today?</label>
+                  <label className="text-[9.5px] uppercase font-bold text-[var(--text-secondary)] block mb-1">
+                    {isEasyMode ? 'What took away your fun or focus? 👾' : 'What wasted your time today?'}
+                  </label>
                   <textarea
                     rows={2}
-                    placeholder="e.g. Spent 1 hour debuging a missing semicolon, slack channel threads..."
+                    placeholder={isEasyMode ? 'Spent too much time on video game screens...' : 'e.g. Spent 1 hour debuging a missing semicolon, slack channel threads...'}
                     value={timeWasted}
                     onChange={(e) => setTimeWasted(e.target.value)}
                     className="w-full bg-black/40 border border-white/8 rounded-xl p-3 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-secondary)] transition-colors resize-none"
@@ -208,23 +248,24 @@ export const DailyPlanner: React.FC<DailyPlannerProps> = ({ onRewardXP }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                   {/* Mood Selector */}
                   <div>
-                    <label className="text-[9.5px] uppercase font-bold text-[var(--text-secondary)] block mb-1.5">Emotional / Energy State</label>
+                    <label className="text-[9.5px] uppercase font-bold text-[var(--text-secondary)] block mb-1.5">
+                      {isEasyMode ? 'How do you feel? 😊' : 'Emotional / Energy State'}
+                    </label>
                     <div className="flex gap-2">
                       {[
-                        { id: 'happy', icon: <Smile className="w-4 h-4" />, label: 'Focused' },
-                        { id: 'neutral', icon: <Meh className="w-4 h-4" />, label: 'Steady' },
-                        { id: 'anxious', icon: <Zap className="w-4 h-4" />, label: 'Stressed' },
-                        { id: 'tired', icon: <Frown className="w-4 h-4" />, label: 'Fatigued' }
+                        { id: 'happy', icon: <Smile className="w-4 h-4" />, label: isEasyMode ? 'Happy' : 'Focused' },
+                        { id: 'neutral', icon: <Meh className="w-4 h-4" />, label: isEasyMode ? 'Okay' : 'Steady' },
+                        { id: 'anxious', icon: <Zap className="w-4 h-4" />, label: isEasyMode ? 'Tired' : 'Stressed' },
+                        { id: 'tired', icon: <Frown className="w-4 h-4" />, label: isEasyMode ? 'Sad' : 'Fatigued' }
                       ].map(item => (
                         <button
                           key={item.id}
                           type="button"
                           onClick={() => setMood(item.id as any)}
                           className={`flex-1 py-2 px-2.5 rounded-xl border text-[9px] font-bold flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                            mood === item.id
-                              ? 'bg-[var(--accent-secondary)]/15 border-[var(--accent-secondary)]/40 text-[var(--accent-secondary)]'
-                              : 'bg-black/25 border-white/4 text-[var(--text-muted)] hover:text-white'
+                            mood === item.id ? 'btn-active-secondary' : 'btn-inactive'
                           }`}
+                          title={`Select feeling: ${item.label}`}
                         >
                           {item.icon}
                           <span>{item.label}</span>
@@ -236,8 +277,12 @@ export const DailyPlanner: React.FC<DailyPlannerProps> = ({ onRewardXP }) => {
                   {/* Productivity slider */}
                   <div className="flex flex-col justify-center">
                     <div className="flex justify-between items-center mb-2">
-                      <label className="text-[9.5px] uppercase font-bold text-[var(--text-secondary)]">Productivity Score</label>
-                      <span className="text-xs font-mono font-bold text-[var(--accent-secondary)]">{productivityScore}%</span>
+                      <label className="text-[9.5px] uppercase font-bold text-[var(--text-secondary)]">
+                        {isEasyMode ? 'How many stars do you give today? ⭐' : 'Productivity Score'}
+                      </label>
+                      <span className="text-xs font-mono font-bold text-[var(--accent-secondary)]">
+                        {isEasyMode ? `${Math.round(productivityScore / 20)} Stars` : `${productivityScore}%`}
+                      </span>
                     </div>
                     <input
                       type="range"
@@ -252,7 +297,7 @@ export const DailyPlanner: React.FC<DailyPlannerProps> = ({ onRewardXP }) => {
               </div>
 
               <button type="submit" className="btn-secondary w-full text-xs py-2.5 rounded-xl cursor-pointer">
-                Submit Reflection Node
+                {isEasyMode ? 'Save My Star Journal 🌟' : 'Submit Reflection Node'}
               </button>
             </form>
 
