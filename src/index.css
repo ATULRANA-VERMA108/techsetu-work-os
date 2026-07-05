@@ -155,15 +155,17 @@ body {
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 10px;
+  border: 2px solid transparent;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-primary);
@@ -1038,6 +1040,34 @@ button {
   border-radius: 16px !important;
   font-weight: 800 !important;
   text-transform: uppercase !important;
+}
+
+/* Mobile and Tablet Scrollability / Responsive Overrides */
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    width: 100vw !important;
+  }
+  .sidebar {
+    width: 100% !important;
+    height: auto !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 16px !important;
+  }
+  .sidebar-collapsed {
+    display: none !important;
+  }
+  .content-container {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .main-workspace {
+    padding: 16px !important;
+    overflow-y: visible !important;
+  }
 }
 
 

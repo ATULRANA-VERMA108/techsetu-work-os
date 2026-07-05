@@ -1198,7 +1198,7 @@ export const KidsGameLab: React.FC<KidsGameLabProps> = ({ onRewardXP, isEasyMode
   };
 
   return (
-    <div className="flex flex-col lg:flex-row h-full bg-[#07070d] text-white rounded-2xl overflow-hidden border border-white/10 relative">
+    <div className="flex flex-col lg:flex-row h-full bg-[#07070d] text-white rounded-2xl overflow-y-auto lg:overflow-hidden border border-white/10 relative">
       
       {/* LEFT: 3D GTA CITY VIEW AREA */}
       <div className="flex-1 flex flex-col relative h-[500px] lg:h-auto min-h-[480px]">
