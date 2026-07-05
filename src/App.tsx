@@ -50,6 +50,7 @@ import { LifeManager } from './components/LifeManager';
 import { AutomationLab } from './components/AutomationLab';
 import { GamificationCenter } from './components/GamificationCenter';
 import { Logo } from './components/Logo';
+import { KidsGameLab } from './components/KidsGameLab';
 
 
 const DEFAULT_TASKS: Task[] = [
@@ -736,6 +737,15 @@ function App() {
               </button>
 
               <button
+                onClick={() => setView('kids')}
+                className={`sidebar-item ${view === 'kids' ? 'sidebar-item-active' : ''}`}
+                title="Kids Game Lab - Design and play custom 3D games"
+              >
+                <Sparkles className="w-4 h-4 shrink-0 text-pink-400 animate-pulse" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'Kids Game Lab 🎮' : '3D Play & Build 🎨'}</span>}
+              </button>
+
+              <button
                 onClick={() => setView('system')}
                 className={`sidebar-item ${view === 'system' ? 'sidebar-item-active' : ''}`}
                 title="System Settings - Change user profile and interface themes"
@@ -1188,6 +1198,13 @@ function App() {
                 xp={xp}
                 level={level}
                 streak={streak}
+              />
+            )}
+
+            {view === 'kids' && (
+              <KidsGameLab
+                onRewardXP={handleRewardXp}
+                isEasyMode={isEasyMode}
               />
             )}
 
