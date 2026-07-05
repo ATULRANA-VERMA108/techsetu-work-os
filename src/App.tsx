@@ -51,6 +51,7 @@ import { AutomationLab } from './components/AutomationLab';
 import { GamificationCenter } from './components/GamificationCenter';
 import { Logo } from './components/Logo';
 import { KidsGameLab } from './components/KidsGameLab';
+import { SystemDemoCenter } from './components/SystemDemoCenter';
 
 
 const DEFAULT_TASKS: Task[] = [
@@ -746,6 +747,15 @@ function App() {
               </button>
 
               <button
+                onClick={() => setView('demo')}
+                className={`sidebar-item ${view === 'demo' ? 'sidebar-item-active' : ''}`}
+                title="System Tour & Interactive Demo - Learn how to use all features"
+              >
+                <Compass className="w-4 h-4 shrink-0 text-cyan-400" />
+                {!isSidebarCollapsed && <span>{isEasyMode ? 'App Demo Tour 🧭' : 'Interactive Tour & Demo'}</span>}
+              </button>
+
+              <button
                 onClick={() => setView('system')}
                 className={`sidebar-item ${view === 'system' ? 'sidebar-item-active' : ''}`}
                 title="System Settings - Change user profile and interface themes"
@@ -1205,6 +1215,16 @@ function App() {
               <KidsGameLab
                 onRewardXP={handleRewardXp}
                 isEasyMode={isEasyMode}
+              />
+            )}
+
+            {view === 'demo' && (
+              <SystemDemoCenter
+                setView={setView}
+                onRewardXP={handleRewardXp}
+                isEasyMode={isEasyMode}
+                toggleEasyMode={toggleEasyMode}
+                openCommandFinder={() => setIsCommandOpen(true)}
               />
             )}
 
