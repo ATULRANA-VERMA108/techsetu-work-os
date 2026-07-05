@@ -650,16 +650,38 @@ export const KidsGameLab: React.FC<KidsGameLabProps> = ({ onRewardXP, isEasyMode
 
     buildCityMeshes();
 
-    // Resize Handler
+    // Resize Observer for robust tab transitions & hidden mounting
+    const resizeObserver = new ResizeObserver((entries) => {
+      if (!mountRef.current || !rendererRef.current || !cameraRef.current) return;
+      for (let entry of entries) {
+        const width = entry.contentRect.width || mountRef.current.clientWidth;
+        const height = entry.contentRect.height || mountRef.current.clientHeight;
+        if (width > 0 && height > 0) {
+          cameraRef.current.aspect = width / height;
+          cameraRef.current.updateProjectionMatrix();
+          rendererRef.current.setSize(width, height);
+        }
+      }
+    });
+    resizeObserver.observe(mountRef.current);
+
+    // Backup Window Resize Handler
     const handleResize = () => {
-      if (!mountRef.current || !renderer || !camera) return;
-      camera.aspect = mountRef.current.clientWidth / mountRef.current.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+      if (!mountRef.current || !rendererRef.current || !cameraRef.current) return;
+      const w = mountRef.current.clientWidth;
+      const h = mountRef.current.clientHeight;
+      if (w > 0 && h > 0) {
+        cameraRef.current.aspect = w / h;
+        cameraRef.current.updateProjectionMatrix();
+        rendererRef.current.setSize(w, h);
+      }
     };
     window.addEventListener('resize', handleResize);
 
     return () => {
+      if (mountRef.current) {
+        resizeObserver.unobserve(mountRef.current);
+      }
       window.removeEventListener('resize', handleResize);
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
       Object.values(blocksMeshesRef.current).forEach(mesh => scene.remove(mesh));

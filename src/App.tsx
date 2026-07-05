@@ -552,7 +552,7 @@ function App() {
   };
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout ${isEasyMode ? 'kids-theme' : ''}`}>
       {/* Background Glow Spheres */}
       <div className="magical-bg">
         <div className="glow-blob blob-1" />
@@ -862,7 +862,7 @@ function App() {
         </header>
 
         {/* Main Body content area */}
-        <main className="main-workspace no-scrollbar">
+        <main className="main-workspace">
           {/* View Router */}
           <div className="w-full animate-fade-in">
             {view === 'dashboard' && (

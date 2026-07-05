@@ -1070,4 +1070,27 @@ button {
   }
 }
 
+/* Ensure that any containers styled with .no-scrollbar still render custom scrollbars for mouse & touch accessibility */
+.no-scrollbar {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent !important;
+}
+.no-scrollbar::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+  display: block !important;
+}
+.no-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border-radius: 10px !important;
+}
+.no-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-radius: 10px !important;
+  border: 2px solid transparent !important;
+}
+.no-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary) !important;
+}
+
 
