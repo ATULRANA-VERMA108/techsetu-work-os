@@ -37,7 +37,7 @@ services:
       - techsetu-work-postgres
       - techsetu-work-mongodb
     ports:
-      - "8081:8080"
+      - "8081:8081"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://techsetu-work-postgres:5432/techsetu_work_os
       - SPRING_DATASOURCE_USERNAME=techsetu

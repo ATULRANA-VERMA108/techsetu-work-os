@@ -48,6 +48,7 @@ import { FocusMode } from './components/FocusMode';
 import { CollabWorkspace } from './components/CollabWorkspace';
 import { LifeManager } from './components/LifeManager';
 import { AutomationLab } from './components/AutomationLab';
+import { API_BASE_URL } from './config';
 import { GamificationCenter } from './components/GamificationCenter';
 import { Logo } from './components/Logo';
 import { KidsGameLab } from './components/KidsGameLab';
@@ -253,7 +254,7 @@ function App() {
     if (jwtToken === null) {
       const probeApis = async () => {
         try {
-          const res = await fetch('http://localhost:8081/api/auth/login', {
+          const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({})
@@ -264,7 +265,7 @@ function App() {
         }
 
         try {
-          const res = await fetch('http://localhost:8081/api/analytics');
+          const res = await fetch(`${API_BASE_URL}/api/analytics`);
           setMongoOnline(res.status !== 404);
         } catch (e) {
           setMongoOnline(false);
@@ -277,7 +278,7 @@ function App() {
   const fetchTasks = async () => {
     if (!jwtToken) return;
     try {
-      const response = await fetch('http://localhost:8081/api/tasks', {
+      const response = await fetch(`${API_BASE_URL}/api/tasks`, {
         headers: { 'Authorization': `Bearer ${jwtToken}` }
       });
       if (response.ok) {
@@ -307,7 +308,7 @@ function App() {
         const added = nextTasks.find(nt => !prevTasks.some(t => t.id === nt.id));
         if (added) {
           const { id, ...payload } = added;
-          const response = await fetch('http://localhost:8081/api/tasks', {
+          const response = await fetch(`${API_BASE_URL}/api/tasks`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -323,7 +324,7 @@ function App() {
       else if (nextTasks.length < prevTasks.length) {
         const deleted = prevTasks.find(t => !nextTasks.some(nt => nt.id === t.id));
         if (deleted) {
-          await fetch(`http://localhost:8081/api/tasks/${deleted.id}`, {
+          await fetch(`${API_BASE_URL}/api/tasks/${deleted.id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${jwtToken}` }
           });
@@ -334,7 +335,7 @@ function App() {
           const nt = nextTasks[i];
           const ot = prevTasks.find(t => t.id === nt.id);
           if (ot && (ot.column !== nt.column || ot.priority !== nt.priority || ot.title !== nt.title || ot.description !== nt.description || ot.assignedTo !== nt.assignedTo || ot.dueDate !== nt.dueDate)) {
-            await fetch(`http://localhost:8081/api/tasks/${nt.id}`, {
+            await fetch(`${API_BASE_URL}/api/tasks/${nt.id}`, {
               method: 'PUT',
               headers: {
                 'Content-Type': 'application/json',
@@ -413,7 +414,7 @@ function App() {
     setIsAuthenticating(true);
 
     try {
-      const response = await fetch('http://localhost:8081/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailInput, password: passwordInput })

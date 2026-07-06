@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import { ShieldCheck, Database, Cpu, HardDrive, RefreshCw } from 'lucide-react';
 
 interface ContainerStatus {
@@ -64,7 +65,7 @@ export const SystemHealthAudit: React.FC<SystemHealthAuditProps> = ({ jwtToken, 
     
     try {
       // Hit a public auth endpoint to see if it replies (even if it's 405/400, it's alive)
-      const response = await fetch('http://localhost:8081/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({})
@@ -90,7 +91,7 @@ export const SystemHealthAudit: React.FC<SystemHealthAuditProps> = ({ jwtToken, 
     } else {
       addLog('Querying PostgreSQL through Tasks Repository...', 'info');
       try {
-        const res = await fetch('http://localhost:8081/api/tasks', {
+        const res = await fetch(`${API_BASE_URL}/api/tasks`, {
           headers: { 'Authorization': `Bearer ${jwtToken}` }
         });
         if (res.ok) {
@@ -110,7 +111,7 @@ export const SystemHealthAudit: React.FC<SystemHealthAuditProps> = ({ jwtToken, 
       setAuditProgress(80);
       addLog('Querying MongoDB through Chat Conversations Repository...', 'info');
       try {
-        const res = await fetch('http://localhost:8081/api/chat/conversations', {
+        const res = await fetch(`${API_BASE_URL}/api/chat/conversations`, {
           headers: { 'Authorization': `Bearer ${jwtToken}` }
         });
         if (res.ok) {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from '../config';
 import { ShieldCheck, User, Mail, Lock, X } from 'lucide-react';
 
 interface AuthModalProps {
@@ -26,7 +27,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8081/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -55,7 +56,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8081/api/auth/signup', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password })

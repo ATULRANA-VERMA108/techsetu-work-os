@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 import { Cpu, Network, Hourglass, Bot, MessageSquare, FileText, Activity } from 'lucide-react';
 
 interface SystemStatsProps {
@@ -48,7 +49,7 @@ export const SystemStats: React.FC<SystemStatsProps> = ({
   const loadAnalytics = async () => {
     if (!jwtToken) return;
     try {
-      const res = await fetch('http://localhost:8081/api/analytics', {
+      const res = await fetch(`${API_BASE_URL}/api/analytics`, {
         headers: { 'Authorization': `Bearer ${jwtToken}` }
       });
       if (res.ok) {

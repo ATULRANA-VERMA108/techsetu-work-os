@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { API_BASE_URL } from '../config';
 import { Bot, Send, User, Sparkles, FileText, Cpu, Plus, Trash2, MessageSquare, AlertCircle } from 'lucide-react';
 
 interface Agent {
@@ -83,7 +84,7 @@ export const AIHub: React.FC<AIHubProps> = ({ jwtToken, customApiKey }) => {
   const loadConversations = async () => {
     if (!jwtToken) return;
     try {
-      const res = await fetch('http://localhost:8081/api/chat/conversations', {
+      const res = await fetch(`${API_BASE_URL}/api/chat/conversations`, {
         headers: { 'Authorization': `Bearer ${jwtToken}` }
       });
       if (res.ok) {
@@ -109,7 +110,7 @@ export const AIHub: React.FC<AIHubProps> = ({ jwtToken, customApiKey }) => {
     const loadMessages = async () => {
       if (!jwtToken || !activeConvId) return;
       try {
-        const res = await fetch(`http://localhost:8081/api/chat/conversations/${activeConvId}/messages`, {
+        const res = await fetch(`${API_BASE_URL}/api/chat/conversations/${activeConvId}/messages`, {
           headers: { 'Authorization': `Bearer ${jwtToken}` }
         });
         if (res.ok) {
@@ -126,7 +127,7 @@ export const AIHub: React.FC<AIHubProps> = ({ jwtToken, customApiKey }) => {
   const handleCreateConversation = async () => {
     if (!jwtToken) return;
     try {
-      const res = await fetch('http://localhost:8081/api/chat/conversations', {
+      const res = await fetch(`${API_BASE_URL}/api/chat/conversations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -149,7 +150,7 @@ export const AIHub: React.FC<AIHubProps> = ({ jwtToken, customApiKey }) => {
     e.stopPropagation();
     if (!jwtToken) return;
     try {
-      const res = await fetch(`http://localhost:8081/api/chat/conversations/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/chat/conversations/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${jwtToken}` }
       });
@@ -174,7 +175,7 @@ export const AIHub: React.FC<AIHubProps> = ({ jwtToken, customApiKey }) => {
     // Create a conversation if none exists
     if (!currentConvId) {
       try {
-        const res = await fetch('http://localhost:8081/api/chat/conversations', {
+        const res = await fetch(`${API_BASE_URL}/api/chat/conversations`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -229,7 +230,7 @@ export const AIHub: React.FC<AIHubProps> = ({ jwtToken, customApiKey }) => {
         ? `${activeAgent.systemPrompt}\n\nUser request: ${text}` 
         : text;
 
-      const response = await fetch(`http://localhost:8081/api/chat/conversations/${currentConvId}/stream`, {
+      const response = await fetch(`${API_BASE_URL}/api/chat/conversations/${currentConvId}/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

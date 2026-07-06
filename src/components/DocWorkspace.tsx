@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { API_BASE_URL } from '../config';
 import { FileText, Eye, Edit3, Download, BookOpen, AlertCircle, UploadCloud, Send, Trash2, HelpCircle, Loader2 } from 'lucide-react';
 
 interface Template {
@@ -123,7 +124,7 @@ Briefly outline why we are building this feature and what metrics it impacts.
   const loadDocuments = async () => {
     if (!jwtToken) return;
     try {
-      const res = await fetch('http://localhost:8081/api/documents', {
+      const res = await fetch(`${API_BASE_URL}/api/documents`, {
         headers: { 'Authorization': `Bearer ${jwtToken}` }
       });
       if (res.ok) {
@@ -151,7 +152,7 @@ Briefly outline why we are building this feature and what metrics it impacts.
       setIsSummarizing(true);
       setSummary('');
       try {
-        const res = await fetch(`http://localhost:8081/api/documents/${selectedDocId}/summary`, {
+        const res = await fetch(`${API_BASE_URL}/api/documents/${selectedDocId}/summary`, {
           headers: {
             'Authorization': `Bearer ${jwtToken}`,
             ...(customApiKey ? { 'X-Gemini-Key': customApiKey } : {})
@@ -197,7 +198,7 @@ Briefly outline why we are building this feature and what metrics it impacts.
     formData.append('file', file);
 
     try {
-      const res = await fetch('http://localhost:8081/api/documents/upload', {
+      const res = await fetch(`${API_BASE_URL}/api/documents/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${jwtToken}`
@@ -226,7 +227,7 @@ Briefly outline why we are building this feature and what metrics it impacts.
     e.stopPropagation();
     if (!jwtToken) return;
     try {
-      const res = await fetch(`http://localhost:8081/api/documents/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/documents/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${jwtToken}` }
       });
@@ -253,7 +254,7 @@ Briefly outline why we are building this feature and what metrics it impacts.
     setIsQuerying(true);
 
     try {
-      const res = await fetch(`http://localhost:8081/api/documents/${selectedDocId}/query`, {
+      const res = await fetch(`${API_BASE_URL}/api/documents/${selectedDocId}/query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
