@@ -27,7 +27,8 @@ import {
   Trophy,
   Compass,
   Menu,
-  Smile
+  Smile,
+  Mail
 } from 'lucide-react';
 import { CommandLauncher } from './components/CommandLauncher';
 import { KanbanBoard } from './components/KanbanBoard';
@@ -163,6 +164,30 @@ function App() {
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [customGoogleEmail, setCustomGoogleEmail] = useState("");
+  
+  // Authentication Portal States
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot'>('login');
+  const [signupName, setSignupName] = useState("");
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
+  const [recoveryStep, setRecoveryStep] = useState<1 | 2 | 3>(1);
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [recoveryCode, setRecoveryCode] = useState("");
+  const [newRecoveryPassword, setNewRecoveryPassword] = useState("");
+  const [simulatedCode, setSimulatedCode] = useState("");
+  const [alert, setAlert] = useState<{ type: 'error' | 'success' | 'info'; message: string } | null>(null);
+
+  const triggerAlert = (message: string, type: 'error' | 'success' | 'info' = 'error') => {
+    setAlert({ type, message });
+    setTimeout(() => {
+      setAlert(prev => prev && prev.message === message ? null : prev);
+    }, 4000);
+  };
+
+  const isValidEmail = (email: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
   const handleNavClick = (newView: string) => {
     setView(newView);
     if (window.innerWidth <= 768) {
@@ -421,8 +446,26 @@ function App() {
     e.preventDefault();
     if (!emailInput.trim() || !passwordInput.trim()) return;
 
+    if (!isValidEmail(emailInput)) {
+      triggerAlert('Please enter a valid email address.', 'error');
+      return;
+    }
+
     setAuthError(null);
     setIsAuthenticating(true);
+
+    // Check recovery override cache
+    const savedOverrides = JSON.parse(localStorage.getItem('techsetu-auth-overrides') || '{}');
+    if (savedOverrides[emailInput] && savedOverrides[emailInput] === passwordInput) {
+      localStorage.setItem('techsetu-jwt', 'demo-recovered-token');
+      localStorage.setItem('techsetu-username', emailInput.split('@')[0]);
+      localStorage.setItem('techsetu-email', emailInput);
+      setJwtToken('demo-recovered-token');
+      setUserName(emailInput.split('@')[0]);
+      showToast('System node handshaked with recovered credentials.');
+      setIsAuthenticating(false);
+      return;
+    }
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
@@ -440,14 +483,119 @@ function App() {
         setUserName(data.email.split('@')[0]);
         showToast('System node handshaked successfully.');
       } else {
-        const errText = await response.text();
-        setAuthError(errText || 'Invalid credentials.');
+        const data = await response.json().catch(() => ({ error: 'Invalid email or access key.' }));
+        const errMsg = data.error || 'Invalid email or access key.';
+        triggerAlert(errMsg, 'error');
       }
     } catch (err) {
-      setAuthError('Connection refused by API gateway.');
+      triggerAlert('Connection refused by API gateway.', 'error');
     } finally {
       setIsAuthenticating(false);
     }
+  };
+
+  // Signup Handler (Direct Auth Registration)
+  const handleSignupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!signupName.trim() || !emailInput.trim() || !passwordInput.trim() || !signupConfirmPassword.trim()) {
+      triggerAlert('All fields are required.', 'error');
+      return;
+    }
+
+    if (!isValidEmail(emailInput)) {
+      triggerAlert('Please enter a valid email address.', 'error');
+      return;
+    }
+
+    if (passwordInput.length < 6) {
+      triggerAlert('Password must be at least 6 characters.', 'error');
+      return;
+    }
+
+    if (passwordInput !== signupConfirmPassword) {
+      triggerAlert('Passwords do not match.', 'error');
+      return;
+    }
+
+    setAuthError(null);
+    setIsAuthenticating(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: signupName, email: emailInput, password: passwordInput })
+      });
+
+      if (response.ok) {
+        triggerAlert('Account registered successfully! You may now sign in.', 'success');
+        setAuthMode('login');
+        setPasswordInput('');
+        setSignupConfirmPassword('');
+      } else {
+        const data = await response.json().catch(() => ({ error: 'Registration failed.' }));
+        const errMsg = data.error || 'Registration failed.';
+        triggerAlert(errMsg, 'error');
+      }
+    } catch (err) {
+      triggerAlert('Connection refused by API gateway.', 'error');
+    } finally {
+      setIsAuthenticating(false);
+    }
+  };
+
+  // Simulated Forgot Password flows
+  const handleForgotPasswordRequest = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!recoveryEmail.trim() || !isValidEmail(recoveryEmail)) {
+      triggerAlert('Please enter a valid recovery email address.', 'error');
+      return;
+    }
+
+    setIsAuthenticating(true);
+    
+    setTimeout(() => {
+      const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+      setSimulatedCode(generatedCode);
+      setIsAuthenticating(false);
+      setRecoveryStep(2);
+      triggerAlert(`Cryptographic handshake reset code sent to ${recoveryEmail}! Check console.`, 'success');
+      console.log(`[TechSetu OS SECURITY PATHWAY] Recovery code for ${recoveryEmail}: ${generatedCode}`);
+    }, 1200);
+  };
+
+  const handleVerifyCode = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (recoveryCode.trim() === simulatedCode) {
+      setRecoveryStep(3);
+      triggerAlert('Access authorized. Enter your new security credentials.', 'success');
+    } else {
+      triggerAlert('Cryptographic key code incorrect.', 'error');
+    }
+  };
+
+  const handleResetPasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRecoveryPassword.trim() || newRecoveryPassword.length < 6) {
+      triggerAlert('Password must be at least 6 characters.', 'error');
+      return;
+    }
+
+    const savedOverrides = JSON.parse(localStorage.getItem('techsetu-auth-overrides') || '{}');
+    savedOverrides[recoveryEmail] = newRecoveryPassword;
+    localStorage.setItem('techsetu-auth-overrides', JSON.stringify(savedOverrides));
+
+    setEmailInput(recoveryEmail);
+    setPasswordInput(newRecoveryPassword);
+
+    setRecoveryStep(1);
+    setRecoveryEmail('');
+    setRecoveryCode('');
+    setNewRecoveryPassword('');
+    setSimulatedCode('');
+    setAuthMode('login');
+
+    triggerAlert('Access Key updated successfully! Please login with your new password.', 'success');
   };
 
   // Google Fast Auth Sign-In / Sign-Up Handshake
@@ -499,7 +647,7 @@ function App() {
         throw new Error('Google Authentication handshake failed.');
       }
     } catch (err: any) {
-      setAuthError(err.message || 'Google Auth gateway timed out.');
+      triggerAlert(err.message || 'Google Auth gateway timed out.', 'error');
     } finally {
       setIsAuthenticating(false);
     }
@@ -537,6 +685,24 @@ function App() {
           <div className="glow-blob blob-3" />
         </div>
 
+        {/* Floating animated alert notification */}
+        {alert && (
+          <div className={`floating-alert floating-alert-${alert.type} animate-slide-in`}>
+            <div className="flex items-center gap-2">
+              <span className="text-xs">
+                {alert.type === 'error' ? '❌' : alert.type === 'success' ? '✅' : 'ℹ️'}
+              </span>
+              <span className="text-xs font-bold text-white leading-tight">{alert.message}</span>
+            </div>
+            <button
+              onClick={() => setAlert(null)}
+              className="text-[14px] text-white/50 hover:text-white bg-transparent border-none p-0 cursor-pointer ml-3 font-bold"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
         <div className="landing-card animate-fade-in">
           <div className="flex flex-col items-center mb-6">
             <Logo size={48} className="mb-3" />
@@ -560,64 +726,234 @@ function App() {
             </div>
           </div>
 
-          <form onSubmit={handleLoginSubmit} className="space-y-4">
-            <div className="landing-input-group">
-              <label className="text-[10px] uppercase font-bold text-[var(--text-secondary)] flex items-center gap-1">
-                <User className="w-3 h-3 text-[var(--accent-primary)]" /> Username / Email
-              </label>
-              <input
-                type="text"
-                placeholder="developer@techsetu.com"
-                required
-                value={emailInput}
-                onChange={(e) => setEmailInput(e.target.value)}
-              />
+          {authMode !== 'forgot' && (
+            <div className="auth-tabs mb-6">
+              <button
+                type="button"
+                onClick={() => { setAuthMode('login'); setAuthError(null); }}
+                className={`auth-tab-btn ${authMode === 'login' ? 'active' : ''}`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => { setAuthMode('signup'); setAuthError(null); }}
+                className={`auth-tab-btn ${authMode === 'signup' ? 'active' : ''}`}
+              >
+                Create Account
+              </button>
             </div>
+          )}
 
-            <div className="landing-input-group">
-              <label className="text-[10px] uppercase font-bold text-[var(--text-secondary)] flex items-center gap-1">
-                <Lock className="w-3 h-3 text-[var(--accent-secondary)]" /> Access Key / Password
-              </label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                required
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-              />
+          {authMode === 'login' && (
+            <form onSubmit={handleLoginSubmit} className="space-y-4">
+              <div className="landing-input-group">
+                <label className="text-[10px] uppercase font-bold text-[var(--text-secondary)] flex items-center gap-1">
+                  <User className="w-3 h-3 text-[var(--accent-primary)]" /> Username / Email
+                </label>
+                <input
+                  type="text"
+                  placeholder="developer@techsetu.com"
+                  required
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                />
+              </div>
+
+              <div className="landing-input-group">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] uppercase font-bold text-[var(--text-secondary)] flex items-center gap-1">
+                    <Lock className="w-3 h-3 text-[var(--accent-secondary)]" /> Access Key / Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => { setAuthMode('forgot'); setRecoveryStep(1); setAuthError(null); }}
+                    className="text-[9px] text-[var(--accent-primary)] hover:underline font-bold bg-transparent border-none p-0 cursor-pointer"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  required
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                />
+              </div>
+
+              <button type="submit" disabled={isAuthenticating} className="btn-primary w-full cursor-pointer py-2.5">
+                {isAuthenticating ? 'Authorizing Node...' : 'Access Workspace'}
+              </button>
+            </form>
+          )}
+
+          {authMode === 'signup' && (
+            <form onSubmit={handleSignupSubmit} className="space-y-4">
+              <div className="landing-input-group">
+                <label className="text-[10px] uppercase font-bold text-[var(--text-secondary)] flex items-center gap-1">
+                  <User className="w-3 h-3 text-[var(--accent-primary)]" /> Full Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Atul Verma"
+                  required
+                  value={signupName}
+                  onChange={(e) => setSignupName(e.target.value)}
+                />
+              </div>
+
+              <div className="landing-input-group">
+                <label className="text-[10px] uppercase font-bold text-[var(--text-secondary)] flex items-center gap-1">
+                  <Mail className="w-3 h-3 text-[var(--accent-secondary)]" /> Email Address
+                </label>
+                <input
+                  type="text"
+                  placeholder="developer@techsetu.com"
+                  required
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                />
+              </div>
+
+              <div className="landing-input-group">
+                <label className="text-[10px] uppercase font-bold text-[var(--text-secondary)] flex items-center gap-1">
+                  <Lock className="w-3 h-3 text-[var(--accent-tertiary)]" /> Access Key / Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="•••••••• (Min. 6 chars)"
+                  required
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                />
+              </div>
+
+              <div className="landing-input-group">
+                <label className="text-[10px] uppercase font-bold text-[var(--text-secondary)] flex items-center gap-1">
+                  <Lock className="w-3 h-3 text-[var(--accent-tertiary)]" /> Confirm Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  required
+                  value={signupConfirmPassword}
+                  onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                />
+              </div>
+
+              <button type="submit" disabled={isAuthenticating} className="btn-primary w-full cursor-pointer py-2.5">
+                {isAuthenticating ? 'Creating Account...' : 'Sign Up Node'}
+              </button>
+            </form>
+          )}
+
+          {authMode === 'forgot' && (
+            <div className="space-y-4 text-left">
+              <h2 className="text-sm font-black uppercase text-[var(--text-primary)] border-b border-white/5 pb-2 mb-2 flex items-center gap-1.5">
+                🔒 Security Recovery Protocol
+              </h2>
+              
+              {recoveryStep === 1 && (
+                <form onSubmit={handleForgotPasswordRequest} className="space-y-4">
+                  <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
+                    Enter your registered email address below. We will transmit a 6-digit cryptographic handshake reset code.
+                  </p>
+                  <div className="landing-input-group">
+                    <label className="text-[10px] uppercase font-bold text-[var(--text-secondary)]">Email Address</label>
+                    <input
+                      type="text"
+                      placeholder="developer@techsetu.com"
+                      required
+                      value={recoveryEmail}
+                      onChange={(e) => setRecoveryEmail(e.target.value)}
+                    />
+                  </div>
+                  <button type="submit" disabled={isAuthenticating} className="btn-primary w-full cursor-pointer py-2.5">
+                    {isAuthenticating ? 'Generating Reset Code...' : 'Send Recovery Code'}
+                  </button>
+                </form>
+              )}
+
+              {recoveryStep === 2 && (
+                <form onSubmit={handleVerifyCode} className="space-y-4">
+                  <p className="text-[11px] text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 p-2 rounded-lg leading-relaxed">
+                    Cryptographic key dispatched! Enter the 6-digit verification code below to authorize security overrides.
+                  </p>
+                  <div className="landing-input-group">
+                    <label className="text-[10px] uppercase font-bold text-[var(--text-secondary)]">6-Digit Code</label>
+                    <input
+                      type="text"
+                      placeholder="Enter code"
+                      required
+                      value={recoveryCode}
+                      onChange={(e) => setRecoveryCode(e.target.value)}
+                      maxLength={6}
+                    />
+                  </div>
+                  <button type="submit" className="btn-primary w-full cursor-pointer py-2.5">
+                    Verify Code & Authorize
+                  </button>
+                </form>
+              )}
+
+              {recoveryStep === 3 && (
+                <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
+                  <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
+                    Authorization verified. Choose a new secure Access Key / Password to connect to your workspace node.
+                  </p>
+                  <div className="landing-input-group">
+                    <label className="text-[10px] uppercase font-bold text-[var(--text-secondary)]">New Password</label>
+                    <input
+                      type="password"
+                      placeholder="•••••••• (Min. 6 chars)"
+                      required
+                      value={newRecoveryPassword}
+                      onChange={(e) => setNewRecoveryPassword(e.target.value)}
+                    />
+                  </div>
+                  <button type="submit" className="btn-primary w-full cursor-pointer py-2.5">
+                    Save New Access Key
+                  </button>
+                </form>
+              )}
+
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => { setAuthMode('login'); setRecoveryStep(1); }}
+                  className="text-[10px] text-[var(--text-muted)] hover:text-white transition-all cursor-pointer underline"
+                >
+                  Back to Sign In
+                </button>
+              </div>
             </div>
+          )}
 
-            {authError && (
-              <p className="text-[10px] text-red-400 font-bold bg-red-500/10 border border-red-500/20 p-2 rounded-lg">
-                {authError}
-              </p>
-            )}
+          {authMode !== 'forgot' && (
+            <>
+              {/* Google Sign-in button */}
+              <button
+                type="button"
+                onClick={() => setShowGoogleModal(true)}
+                className="google-signin-btn-main w-full flex items-center justify-center gap-2.5 py-2.5 mt-3.5 rounded-xl border border-white/8 bg-white/3 hover:bg-white/6 text-xs font-bold text-white transition-all cursor-pointer shadow-md hover:border-white/12"
+              >
+                <svg className="shrink-0" style={{ width: '16px', height: '16px', display: 'block' }} viewBox="0 0 24 24">
+                  <path
+                    fill="#EA4335"
+                    d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.2-5.136 4.2A5.72 5.72 0 0 1 8.24 12.87a5.72 5.72 0 0 1 5.751-5.73 5.59 5.59 0 0 1 3.93 1.575l3.05-3.05A9.97 9.97 0 0 0 13.99 2.22 10.02 10.02 0 0 0 4 12.23a10.02 10.02 0 0 0 10.01 10.01 9.87 9.87 0 0 0 9.91-10.01c0-.663-.06-1.285-.18-1.945H12.24z"
+                  />
+                </svg>
+                <span>Sign in with Google</span>
+              </button>
 
-            <button type="submit" disabled={isAuthenticating} className="btn-primary w-full cursor-pointer py-2.5">
-              {isAuthenticating ? 'Authorizing Node...' : 'Access Workspace'}
-            </button>
-          </form>
-
-          {/* Google Sign-in button */}
-          <button
-            type="button"
-            onClick={() => setShowGoogleModal(true)}
-            className="google-signin-btn-main w-full flex items-center justify-center gap-2.5 py-2.5 mt-3.5 rounded-xl border border-white/8 bg-white/3 hover:bg-white/6 text-xs font-bold text-white transition-all cursor-pointer shadow-md hover:border-white/12"
-          >
-            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-              <path
-                fill="#EA4335"
-                d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.2-5.136 4.2A5.72 5.72 0 0 1 8.24 12.87a5.72 5.72 0 0 1 5.751-5.73 5.59 5.59 0 0 1 3.93 1.575l3.05-3.05A9.97 9.97 0 0 0 13.99 2.22 10.02 10.02 0 0 0 4 12.23a10.02 10.02 0 0 0 10.01 10.01 9.87 9.87 0 0 0 9.91-10.01c0-.663-.06-1.285-.18-1.945H12.24z"
-              />
-            </svg>
-            <span>Sign in with Google</span>
-          </button>
-
-          <div className="relative flex py-4 items-center">
-            <div className="flex-grow border-t border-white/5"></div>
-            <span className="flex-shrink mx-4 text-[9px] text-[var(--text-muted)] uppercase font-bold">Or</span>
-            <div className="flex-grow border-t border-white/5"></div>
-          </div>
+              <div className="relative flex py-4 items-center">
+                <div className="flex-grow border-t border-white/5"></div>
+                <span className="flex-shrink mx-4 text-[9px] text-[var(--text-muted)] uppercase font-bold">Or</span>
+                <div className="flex-grow border-t border-white/5"></div>
+              </div>
+            </>
+          )}
 
           <button onClick={handleGuestExplore} className="btn-secondary w-full cursor-pointer py-2">
             Explore Demo Environment
