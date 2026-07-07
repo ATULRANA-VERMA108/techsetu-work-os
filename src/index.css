@@ -657,6 +657,25 @@ input::placeholder, textarea::placeholder {
   margin-top: 24px;
   flex: 1;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.sidebar-menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
 }
 
 .sidebar-item {
@@ -1042,8 +1061,17 @@ button {
   text-transform: uppercase !important;
 }
 
+.mobile-toggle {
+  display: none !important;
+}
+
 /* Mobile and Tablet Scrollability / Responsive Overrides */
 @media (max-width: 768px) {
+  .mobile-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
   .app-layout {
     flex-direction: column !important;
     overflow-y: auto !important;

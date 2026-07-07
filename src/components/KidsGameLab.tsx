@@ -466,7 +466,7 @@ export const KidsGameLab: React.FC<KidsGameLabProps> = ({ onRewardXP, isEasyMode
     }
   };
 
-  // Main 3D Canvas setup & Rendering
+  // Main 3D Canvas setup (runs only once on mount)
   useEffect(() => {
     if (!mountRef.current) return;
 
@@ -520,165 +520,6 @@ export const KidsGameLab: React.FC<KidsGameLabProps> = ({ onRewardXP, isEasyMode
     floor.receiveShadow = true;
     scene.add(floor);
 
-    // Renders Premium City Meshes
-    const renderCityBlocks = () => {
-      Object.values(blocksMeshesRef.current).forEach(m => scene.remove(m));
-      blocksMeshesRef.current = {};
-
-      let carSpawnPos = new THREE.Vector3(0, 0.18, 0);
-
-      blocks.forEach((b, idx) => {
-        const key = `${b.x},${b.y},${b.z}`;
-
-        if (b.type === 'car') {
-          carSpawnPos.set(b.x, 0.18, b.z);
-          return;
-        }
-
-        let meshGroup = new THREE.Group();
-
-        switch (b.type) {
-          case 'road': {
-            // Tarmac gray box
-            const road = new THREE.Mesh(
-              new THREE.BoxGeometry(0.99, 0.1, 0.99),
-              new THREE.MeshStandardMaterial({ color: 0x1a1a20, roughness: 0.9 })
-            );
-            road.receiveShadow = true;
-            meshGroup.add(road);
-
-            // Dash lines
-            const dash = new THREE.Mesh(
-              new THREE.BoxGeometry(0.08, 0.012, 0.48),
-              new THREE.MeshBasicMaterial({ color: 0xfef08a })
-            );
-            dash.position.set(0, 0.052, 0);
-            meshGroup.add(dash);
-            break;
-          }
-          case 'sidewalk': {
-            const side = new THREE.Mesh(
-              new THREE.BoxGeometry(0.99, 0.16, 0.99),
-              new THREE.MeshStandardMaterial({ color: 0x3f3f46, roughness: 0.85 })
-            );
-            side.receiveShadow = true;
-            meshGroup.add(side);
-            break;
-          }
-          case 'skyscraper': {
-            // High-fidelity skyscraper with grid windows!
-            const height = 4.5 + (idx % 3) * 2;
-            const tower = new THREE.Mesh(
-              new THREE.BoxGeometry(0.96, height, 0.96),
-              new THREE.MeshStandardMaterial({ color: 0x090d16, metalness: 0.92, roughness: 0.05, transparent: true, opacity: 0.92 })
-            );
-            tower.position.y = height / 2 - 0.1;
-            tower.castShadow = true;
-            tower.receiveShadow = true;
-            meshGroup.add(tower);
-
-            // Adding grids of windows programmatically
-            for (let h = 0.5; h < height - 0.5; h += 0.8) {
-              for (let side = 0; side < 4; side++) {
-                for (let offset = -0.3; offset <= 0.3; offset += 0.3) {
-                  if (Math.random() < 0.45) { // 45% of windows are lit up
-                    const windowGeom = new THREE.BoxGeometry(0.08, 0.12, 0.01);
-                    const windowMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
-                    const windowMesh = new THREE.Mesh(windowGeom, windowMat);
-                    
-                    if (side === 0) windowMesh.position.set(offset, h, 0.482);
-                    else if (side === 1) { windowMesh.position.set(offset, h, -0.482); windowMesh.rotation.y = Math.PI; }
-                    else if (side === 2) { windowMesh.position.set(0.482, h, offset); windowMesh.rotation.y = Math.PI / 2; }
-                    else { windowMesh.position.set(-0.482, h, offset); windowMesh.rotation.y = -Math.PI / 2; }
-                    
-                    meshGroup.add(windowMesh);
-                  }
-                }
-              }
-            }
-
-            // Spire
-            const cap = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.5, 0.4), new THREE.MeshBasicMaterial({ color: 0x00f0b5 }));
-            cap.position.set(0, height, 0);
-            meshGroup.add(cap);
-            break;
-          }
-          case 'office': {
-            const body = new THREE.Mesh(
-              new THREE.BoxGeometry(0.98, 3.2, 0.98),
-              new THREE.MeshStandardMaterial({ color: 0x065f46, metalness: 0.8, roughness: 0.1 })
-            );
-            body.position.y = 1.6 - 0.1;
-            body.castShadow = true;
-            meshGroup.add(body);
-
-            // Office floating label
-            const label = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshBasicMaterial({ color: 0x10b981 }));
-            label.position.set(0, 3.4, 0);
-            meshGroup.add(label);
-            break;
-          }
-          case 'bank': {
-            const body = new THREE.Mesh(
-              new THREE.BoxGeometry(0.98, 3.2, 0.98),
-              new THREE.MeshStandardMaterial({ color: 0x1e40af, metalness: 0.95, roughness: 0.05 })
-            );
-            body.position.y = 1.6 - 0.1;
-            body.castShadow = true;
-            meshGroup.add(body);
-
-            const label = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshBasicMaterial({ color: 0x3b82f6 }));
-            label.position.set(0, 3.4, 0);
-            meshGroup.add(label);
-            break;
-          }
-          case 'shop': {
-            const body = new THREE.Mesh(
-              new THREE.BoxGeometry(0.98, 2.4, 0.98),
-              new THREE.MeshStandardMaterial({ color: 0x9a3412, metalness: 0.5, roughness: 0.4 })
-            );
-            body.position.y = 1.2 - 0.1;
-            body.castShadow = true;
-            meshGroup.add(body);
-
-            const label = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshBasicMaterial({ color: 0xeab308 }));
-            label.position.set(0, 2.7, 0);
-            meshGroup.add(label);
-            break;
-          }
-          case 'tree': {
-            const trunk = new THREE.Mesh(
-              new THREE.CylinderGeometry(0.1, 0.12, 0.8),
-              new THREE.MeshStandardMaterial({ color: 0x3e2723 })
-            );
-            trunk.position.y = 0.4;
-            meshGroup.add(trunk);
-
-            const leaves = new THREE.Mesh(
-              new THREE.SphereGeometry(0.42, 8, 8),
-              new THREE.MeshStandardMaterial({ color: 0x064e3b, roughness: 0.85 })
-            );
-            leaves.position.y = 0.95;
-            leaves.castShadow = true;
-            meshGroup.add(leaves);
-            break;
-          }
-        }
-
-        meshGroup.position.set(b.x, b.y, b.z);
-        meshGroup.userData = { type: b.type, id: idx, key };
-        scene.add(meshGroup);
-        blocksMeshesRef.current[key] = meshGroup;
-      });
-
-      carPosVec.current.copy(carSpawnPos);
-      if (carModelRef.current) {
-        carModelRef.current.position.copy(carSpawnPos);
-      }
-    };
-
-    renderCityBlocks();
-
     // Resize Observer
     const resizeObserver = new ResizeObserver((entries) => {
       if (!mountRef.current || !renderer || !camera) return;
@@ -709,8 +550,169 @@ export const KidsGameLab: React.FC<KidsGameLabProps> = ({ onRewardXP, isEasyMode
     return () => {
       if (mountRef.current) resizeObserver.unobserve(mountRef.current);
       window.removeEventListener('resize', handleResize);
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
-      Object.values(blocksMeshesRef.current).forEach(m => scene.remove(m));
+      controls.dispose();
+      renderer.dispose();
+    };
+  }, []);
+
+  // Renders Premium City Meshes (runs when blocks change)
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+
+    // Clear old blocks from scene
+    Object.values(blocksMeshesRef.current).forEach(m => scene.remove(m));
+    blocksMeshesRef.current = {};
+
+    let carSpawnPos = new THREE.Vector3(0, 0.18, 0);
+
+    blocks.forEach((b, idx) => {
+      const key = `${b.x},${b.y},${b.z}`;
+
+      if (b.type === 'car') {
+        carSpawnPos.set(b.x, 0.18, b.z);
+        return;
+      }
+
+      let meshGroup = new THREE.Group();
+
+      switch (b.type) {
+        case 'road': {
+          const road = new THREE.Mesh(
+            new THREE.BoxGeometry(0.99, 0.1, 0.99),
+            new THREE.MeshStandardMaterial({ color: 0x1a1a20, roughness: 0.9 })
+          );
+          road.receiveShadow = true;
+          meshGroup.add(road);
+
+          const dash = new THREE.Mesh(
+            new THREE.BoxGeometry(0.08, 0.012, 0.48),
+            new THREE.MeshBasicMaterial({ color: 0xfef08a })
+          );
+          dash.position.set(0, 0.052, 0);
+          meshGroup.add(dash);
+          break;
+        }
+        case 'sidewalk': {
+          const side = new THREE.Mesh(
+            new THREE.BoxGeometry(0.99, 0.16, 0.99),
+            new THREE.MeshStandardMaterial({ color: 0x3f3f46, roughness: 0.85 })
+          );
+          side.receiveShadow = true;
+          meshGroup.add(side);
+          break;
+        }
+        case 'skyscraper': {
+          const height = 4.5 + (idx % 3) * 2;
+          const tower = new THREE.Mesh(
+            new THREE.BoxGeometry(0.96, height, 0.96),
+            new THREE.MeshStandardMaterial({ color: 0x090d16, metalness: 0.92, roughness: 0.05, transparent: true, opacity: 0.92 })
+          );
+          tower.position.y = height / 2 - 0.1;
+          tower.castShadow = true;
+          tower.receiveShadow = true;
+          meshGroup.add(tower);
+
+          for (let h = 0.5; h < height - 0.5; h += 0.8) {
+            for (let side = 0; side < 4; side++) {
+              for (let offset = -0.3; offset <= 0.3; offset += 0.3) {
+                if (Math.random() < 0.45) {
+                  const windowGeom = new THREE.BoxGeometry(0.08, 0.12, 0.01);
+                  const windowMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
+                  const windowMesh = new THREE.Mesh(windowGeom, windowMat);
+                  
+                  if (side === 0) windowMesh.position.set(offset, h, 0.482);
+                  else if (side === 1) { windowMesh.position.set(offset, h, -0.482); windowMesh.rotation.y = Math.PI; }
+                  else if (side === 2) { windowMesh.position.set(0.482, h, offset); windowMesh.rotation.y = Math.PI / 2; }
+                  else { windowMesh.position.set(-0.482, h, offset); windowMesh.rotation.y = -Math.PI / 2; }
+                  
+                  meshGroup.add(windowMesh);
+                }
+              }
+            }
+          }
+
+          const cap = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.5, 0.4), new THREE.MeshBasicMaterial({ color: 0x00f0b5 }));
+          cap.position.set(0, height, 0);
+          meshGroup.add(cap);
+          break;
+        }
+        case 'office': {
+          const body = new THREE.Mesh(
+            new THREE.BoxGeometry(0.98, 3.2, 0.98),
+            new THREE.MeshStandardMaterial({ color: 0x065f46, metalness: 0.8, roughness: 0.1 })
+          );
+          body.position.y = 1.6 - 0.1;
+          body.castShadow = true;
+          meshGroup.add(body);
+
+          const label = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshBasicMaterial({ color: 0x10b981 }));
+          label.position.set(0, 3.4, 0);
+          meshGroup.add(label);
+          break;
+        }
+        case 'bank': {
+          const body = new THREE.Mesh(
+            new THREE.BoxGeometry(0.98, 3.2, 0.98),
+            new THREE.MeshStandardMaterial({ color: 0x1e40af, metalness: 0.95, roughness: 0.05 })
+          );
+          body.position.y = 1.6 - 0.1;
+          body.castShadow = true;
+          meshGroup.add(body);
+
+          const label = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshBasicMaterial({ color: 0x3b82f6 }));
+          label.position.set(0, 3.4, 0);
+          meshGroup.add(label);
+          break;
+        }
+        case 'shop': {
+          const body = new THREE.Mesh(
+            new THREE.BoxGeometry(0.98, 2.4, 0.98),
+            new THREE.MeshStandardMaterial({ color: 0x9a3412, metalness: 0.5, roughness: 0.4 })
+          );
+          body.position.y = 1.2 - 0.1;
+          body.castShadow = true;
+          meshGroup.add(body);
+
+          const label = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshBasicMaterial({ color: 0xeab308 }));
+          label.position.set(0, 2.7, 0);
+          meshGroup.add(label);
+          break;
+        }
+        case 'tree': {
+          const trunk = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.1, 0.12, 0.8),
+            new THREE.MeshStandardMaterial({ color: 0x3e2723 })
+          );
+          trunk.position.y = 0.4;
+          meshGroup.add(trunk);
+
+          const leaves = new THREE.Mesh(
+            new THREE.SphereGeometry(0.42, 8, 8),
+            new THREE.MeshStandardMaterial({ color: 0x064e3b, roughness: 0.85 })
+          );
+          leaves.position.y = 0.95;
+          leaves.castShadow = true;
+          meshGroup.add(leaves);
+          break;
+        }
+      }
+
+      meshGroup.position.set(b.x, b.y, b.z);
+      meshGroup.userData = { type: b.type, id: idx, key };
+      scene.add(meshGroup);
+      blocksMeshesRef.current[key] = meshGroup;
+    });
+
+    carPosVec.current.copy(carSpawnPos);
+    if (carModelRef.current) {
+      carModelRef.current.position.copy(carSpawnPos);
+    }
+
+    return () => {
+      Object.values(blocksMeshesRef.current).forEach(m => {
+        if (sceneRef.current) sceneRef.current.remove(m);
+      });
     };
   }, [blocks]);
 
@@ -1282,6 +1284,13 @@ export const KidsGameLab: React.FC<KidsGameLabProps> = ({ onRewardXP, isEasyMode
 
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      const scene = sceneRef.current;
+      if (scene) {
+        if (carGroup) scene.remove(carGroup);
+        if (playerGroup) scene.remove(playerGroup);
+        smokeParticles.current.forEach(p => scene.remove(p.mesh));
+      }
+      smokeParticles.current = [];
     };
   }, [isPlaying, isDriving, blocks, tasks]);
 

@@ -25,7 +25,8 @@ import {
   Flame,
   Zap,
   Trophy,
-  Compass
+  Compass,
+  Menu
 } from 'lucide-react';
 import { CommandLauncher } from './components/CommandLauncher';
 import { KanbanBoard } from './components/KanbanBoard';
@@ -158,6 +159,12 @@ function App() {
   // Authentication states
   const [jwtToken, setJwtToken] = useState<string | null>(localStorage.getItem('techsetu-jwt') || null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const handleNavClick = (newView: string) => {
+    setView(newView);
+    if (window.innerWidth <= 768) {
+      setIsSidebarCollapsed(true);
+    }
+  };
   const [customApiKey, setCustomApiKey] = useState<string | null>(localStorage.getItem('techsetu-custom-gemini-key') || null);
 
   // Landing Page Forms
@@ -564,8 +571,8 @@ function App() {
 
       {/* Sidebar Navigation */}
       <aside className={`sidebar ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-        <div className="flex flex-col h-full justify-between">
-          <div className="space-y-4">
+        <div className="flex flex-col h-full">
+          <div className="flex flex-col flex-1 min-h-0 space-y-4">
             {/* Sidebar Brand header */}
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
               <div className="flex items-center space-x-2.5 overflow-hidden">
@@ -622,7 +629,7 @@ function App() {
             {/* Sidebar Menu items */}
             <nav className="sidebar-menu">
               <button
-                onClick={() => setView('dashboard')}
+                onClick={() => handleNavClick('dashboard')}
                 className={`sidebar-item ${view === 'dashboard' ? 'sidebar-item-active' : ''}`}
                 title="Operations Hub - See my stats, daily trends, and overall growth"
               >
@@ -631,7 +638,7 @@ function App() {
               </button>
 
               <button
-                onClick={() => setView('tasks')}
+                onClick={() => handleNavClick('tasks')}
                 className={`sidebar-item ${view === 'tasks' ? 'sidebar-item-active' : ''}`}
                 title="AI Task Manager - Write my play and study checklists"
               >
@@ -640,7 +647,7 @@ function App() {
               </button>
 
               <button
-                onClick={() => setView('calendar')}
+                onClick={() => handleNavClick('calendar')}
                 className={`sidebar-item ${view === 'calendar' ? 'sidebar-item-active' : ''}`}
                 title="Smart Scheduler - View dates and times for play and work"
               >
@@ -649,7 +656,7 @@ function App() {
               </button>
 
               <button
-                onClick={() => setView('goals')}
+                onClick={() => handleNavClick('goals')}
                 className={`sidebar-item ${view === 'goals' ? 'sidebar-item-active' : ''}`}
                 title="AI Goal Tracker - Write my wishes and lifetime dreams"
               >
@@ -658,7 +665,7 @@ function App() {
               </button>
 
               <button
-                onClick={() => setView('planner')}
+                onClick={() => handleNavClick('planner')}
                 className={`sidebar-item ${view === 'planner' ? 'sidebar-item-active' : ''}`}
                 title="Daily Planner - Plan my morning play and night reflections"
               >
@@ -667,7 +674,7 @@ function App() {
               </button>
 
               <button
-                onClick={() => setView('habits')}
+                onClick={() => handleNavClick('habits')}
                 className={`sidebar-item ${view === 'habits' ? 'sidebar-item-active' : ''}`}
                 title="Habits Hub - Build daily habits streaks"
               >
@@ -676,7 +683,7 @@ function App() {
               </button>
 
               <button
-                onClick={() => setView('focus')}
+                onClick={() => handleNavClick('focus')}
                 className={`sidebar-item ${view === 'focus' ? 'sidebar-item-active' : ''}`}
                 title="Focus Engine - Run Pomodoro study timer with fun music sounds"
               >
@@ -685,7 +692,7 @@ function App() {
               </button>
 
               <button
-                onClick={() => setView('ai')}
+                onClick={() => handleNavClick('ai')}
                 className={`sidebar-item ${view === 'ai' ? 'sidebar-item-active' : ''}`}
                 title="AI Co-Pilots - Talk to my intelligent robot friends"
               >
@@ -694,7 +701,7 @@ function App() {
               </button>
 
               <button
-                onClick={() => setView('docs')}
+                onClick={() => handleNavClick('docs')}
                 className={`sidebar-item ${view === 'docs' ? 'sidebar-item-active' : ''}`}
                 title="Second Brain - Write notes and documents"
               >
@@ -703,7 +710,7 @@ function App() {
               </button>
 
               <button
-                onClick={() => setView('workspaces')}
+                onClick={() => handleNavClick('workspaces')}
                 className={`sidebar-item ${view === 'workspaces' ? 'sidebar-item-active' : ''}`}
                 title="Workspaces - Chat with team members and friends"
               >
@@ -712,7 +719,7 @@ function App() {
               </button>
 
               <button
-                onClick={() => setView('life')}
+                onClick={() => handleNavClick('life')}
                 className={`sidebar-item ${view === 'life' ? 'sidebar-item-active' : ''}`}
                 title="Life Manager - Track books, meal plans, and piggybank savings"
               >
@@ -721,7 +728,7 @@ function App() {
               </button>
 
               <button
-                onClick={() => setView('automation')}
+                onClick={() => handleNavClick('automation')}
                 className={`sidebar-item ${view === 'automation' ? 'sidebar-item-active' : ''}`}
                 title="Automation Lab - Create trigger-action zaps"
               >
@@ -730,7 +737,7 @@ function App() {
               </button>
 
               <button
-                onClick={() => setView('gamification')}
+                onClick={() => handleNavClick('gamification')}
                 className={`sidebar-item ${view === 'gamification' ? 'sidebar-item-active' : ''}`}
                 title="Gamification - Check XP points, levels, and leaderboards"
               >
@@ -739,7 +746,7 @@ function App() {
               </button>
 
               <button
-                onClick={() => setView('kids')}
+                onClick={() => handleNavClick('kids')}
                 className={`sidebar-item ${view === 'kids' ? 'sidebar-item-active' : ''}`}
                 title="Kids Game Lab - Design and play custom 3D games"
               >
@@ -748,7 +755,7 @@ function App() {
               </button>
 
               <button
-                onClick={() => setView('demo')}
+                onClick={() => handleNavClick('demo')}
                 className={`sidebar-item ${view === 'demo' ? 'sidebar-item-active' : ''}`}
                 title="System Tour & Interactive Demo - Learn how to use all features"
               >
@@ -757,7 +764,7 @@ function App() {
               </button>
 
               <button
-                onClick={() => setView('system')}
+                onClick={() => handleNavClick('system')}
                 className={`sidebar-item ${view === 'system' ? 'sidebar-item-active' : ''}`}
                 title="System Settings - Change user profile and interface themes"
               >
@@ -768,7 +775,7 @@ function App() {
           </div>
 
           {/* User profile dock inside sidebar */}
-          <div className="border-t border-white/5 pt-4">
+          <div className="border-t border-white/5 pt-4 shrink-0">
             <div className="relative group">
               <button className="w-full flex items-center justify-start gap-3 p-1.5 rounded-lg border border-white/5 bg-white/2 hover:bg-white/6 hover:border-[var(--accent-primary)] transition-all cursor-pointer">
                 <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-[var(--accent-primary)] shrink-0">
@@ -810,6 +817,15 @@ function App() {
         
         {/* Workspace Top Header Bar */}
         <header className="header-section">
+          {/* Mobile Sidebar Toggle */}
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className="mobile-toggle p-1.5 mr-2 bg-white/4 hover:bg-white/8 border border-white/8 rounded-lg text-[var(--text-secondary)] hover:text-white transition-all cursor-pointer flex items-center justify-center shrink-0"
+            title="Toggle Sidebar Navigation"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+          
           {/* Left: active tickers */}
           <div className="flex items-center space-x-6 text-[10px] text-[var(--text-secondary)] font-mono">
             <div className="flex items-center space-x-2">
