@@ -31,6 +31,11 @@ TechSetu Work OS includes a suite of integrated modules designed for developers,
 - **Efficient Mesh Updates**: Regenerates city block groups within the existing active context on `blocks` updates, bypassing the need to recreate WebGL contexts. This resolves black-screen crashes and canvas rendering locks.
 - **Drift Smoke & Physics Cleanup**: Configured rigorous scene removal loops for spawned sports cars, player avatars, and drifting particles to prevent duplicate objects from bloating memory.
 
+### 3. Sign in with Google (Fast Auth Handshake)
+- **Google Sign-In Button**: Integrated a custom, high-fidelity Google login button featuring the official Google red G-Logo.
+- **Account Chooser Modal**: Opens a premium Google account selector modal offering preconfigured fast-login profiles (e.g., `vatulrana104@gmail.com`) and custom email entry inputs.
+- **Automated Handshake**: Connects client-side Google identities directly to the Java backend database. If an email is new, it automatically registers it (`/api/auth/signup`) and performs a subsequent login (`/api/auth/login`) with secure generated credentials, authorizing the workspace session instantly.
+
 ---
 
 ## 💻 Tech Stack & Commands
