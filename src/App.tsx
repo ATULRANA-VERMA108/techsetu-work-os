@@ -26,7 +26,8 @@ import {
   Zap,
   Trophy,
   Compass,
-  Menu
+  Menu,
+  Smile
 } from 'lucide-react';
 import { CommandLauncher } from './components/CommandLauncher';
 import { KanbanBoard } from './components/KanbanBoard';
@@ -159,6 +160,7 @@ function App() {
   // Authentication states
   const [jwtToken, setJwtToken] = useState<string | null>(localStorage.getItem('techsetu-jwt') || null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
   const handleNavClick = (newView: string) => {
     setView(newView);
     if (window.innerWidth <= 768) {
@@ -571,8 +573,8 @@ function App() {
 
       {/* Sidebar Navigation */}
       <aside className={`sidebar ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-        <div className="flex flex-col h-full">
-          <div className="flex flex-col flex-1 min-h-0 space-y-4">
+        <div className="sidebar-wrapper">
+          <div className="sidebar-top">
             {/* Sidebar Brand header */}
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
               <div className="flex items-center space-x-2.5 overflow-hidden">
@@ -625,9 +627,10 @@ function App() {
                 🧸
               </button>
             )}
+          </div>
 
-            {/* Sidebar Menu items */}
-            <nav className="sidebar-menu">
+          {/* Sidebar Menu items */}
+          <nav className="sidebar-menu">
               <button
                 onClick={() => handleNavClick('dashboard')}
                 className={`sidebar-item ${view === 'dashboard' ? 'sidebar-item-active' : ''}`}
@@ -772,10 +775,9 @@ function App() {
                 {!isSidebarCollapsed && <span>{isEasyMode ? 'Settings & Themes ⚙️' : 'System & Connect'}</span>}
               </button>
             </nav>
-          </div>
 
           {/* User profile dock inside sidebar */}
-          <div className="border-t border-white/5 pt-4 shrink-0">
+          <div className="sidebar-bottom">
             <div className="relative group">
               <button className="w-full flex items-center justify-start gap-3 p-1.5 rounded-lg border border-white/5 bg-white/2 hover:bg-white/6 hover:border-[var(--accent-primary)] transition-all cursor-pointer">
                 <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-[var(--accent-primary)] shrink-0">
@@ -854,36 +856,41 @@ function App() {
             </button>
 
             {/* Theme selector */}
-            <div className="relative group">
-              <button className="btn-secondary text-[10px] py-1.5 px-3 flex items-center gap-1.5 cursor-pointer">
-                <Palette className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
-                <span>{getThemeDisplayName(theme)}</span>
+            <div className="relative">
+              <button
+                onClick={() => setIsThemeOpen(!isThemeOpen)}
+                className="btn-secondary text-[10px] p-2 flex items-center justify-center cursor-pointer rounded-xl hover:text-[var(--accent-primary)] transition-all"
+                title="Choose Design Theme"
+              >
+                <Smile className="w-4 h-4 text-[var(--accent-primary)]" />
               </button>
               
-              <div className="absolute right-0 mt-1.5 w-44 glass-card bg-[var(--bg-secondary)] border border-[var(--border-color)] py-1.5 rounded-xl opacity-0 scale-95 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto transition-all duration-200 z-30 shadow-2xl">
-                <span className="px-3 py-1 text-[9px] uppercase font-bold text-[var(--text-muted)] tracking-wider block">Design Theme</span>
-                <button 
-                  onClick={() => setTheme('obsidian-aurora')}
-                  className="w-full text-left px-3 py-2 text-xs hover:bg-white/5 text-[var(--text-primary)] hover:text-[var(--accent-primary)] flex items-center justify-between cursor-pointer"
-                >
-                  <span>Obsidian Aurora</span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#00f0b5]" />
-                </button>
-                <button 
-                  onClick={() => setTheme('cyber-silver')}
-                  className="w-full text-left px-3 py-2 text-xs hover:bg-white/5 text-[var(--text-primary)] hover:text-sky-400 flex items-center justify-between cursor-pointer"
-                >
-                  <span>Cyber Silver</span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#38bdf8]" />
-                </button>
-                <button 
-                  onClick={() => setTheme('solar-flare')}
-                  className="w-full text-left px-3 py-2 text-xs hover:bg-white/5 text-[var(--text-primary)] hover:text-orange-500 flex items-center justify-between cursor-pointer"
-                >
-                  <span>Solar Flare</span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#f97316]" />
-                </button>
-              </div>
+              {isThemeOpen && (
+                <div className="absolute right-0 mt-1.5 w-44 glass-card bg-[var(--bg-secondary)] border border-[var(--border-color)] py-1.5 rounded-xl z-30 shadow-2xl animate-scale-in">
+                  <span className="px-3 py-1 text-[9px] uppercase font-bold text-[var(--text-muted)] tracking-wider block">Design Theme</span>
+                  <button 
+                    onClick={() => { setTheme('obsidian-aurora'); setIsThemeOpen(false); }}
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-white/5 text-[var(--text-primary)] hover:text-[var(--accent-primary)] flex items-center justify-between cursor-pointer"
+                  >
+                    <span>Obsidian Aurora</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#00f0b5]" />
+                  </button>
+                  <button 
+                    onClick={() => { setTheme('cyber-silver'); setIsThemeOpen(false); }}
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-white/5 text-[var(--text-primary)] hover:text-sky-400 flex items-center justify-between cursor-pointer"
+                  >
+                    <span>Cyber Silver</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#38bdf8]" />
+                  </button>
+                  <button 
+                    onClick={() => { setTheme('solar-flare'); setIsThemeOpen(false); }}
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-white/5 text-[var(--text-primary)] hover:text-orange-500 flex items-center justify-between cursor-pointer"
+                  >
+                    <span>Solar Flare</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#f97316]" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>
