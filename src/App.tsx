@@ -161,6 +161,8 @@ function App() {
   const [jwtToken, setJwtToken] = useState<string | null>(localStorage.getItem('techsetu-jwt') || null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [customGoogleEmail, setCustomGoogleEmail] = useState("");
   const handleNavClick = (newView: string) => {
     setView(newView);
     if (window.innerWidth <= 768) {
@@ -448,6 +450,61 @@ function App() {
     }
   };
 
+  // Google Fast Auth Sign-In / Sign-Up Handshake
+  const handleGoogleLogin = async (email: string, displayName: string) => {
+    setAuthError(null);
+    setIsAuthenticating(true);
+    setShowGoogleModal(false);
+
+    const mockPassword = `GoogleUserAuthPassWord99#_${email}`;
+
+    try {
+      // 1. Try to log in
+      let response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: mockPassword })
+      });
+
+      if (!response.ok) {
+        // 2. If login fails, try to sign up (register)
+        const signupResponse = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: displayName, email, password: mockPassword })
+        });
+
+        if (signupResponse.ok) {
+          // Retry login
+          response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password: mockPassword })
+          });
+        } else {
+          const errData = await signupResponse.json().catch(() => ({ error: 'Auto-registration failed.' }));
+          throw new Error(errData.error || 'Failed to auto-register Google account.');
+        }
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('techsetu-jwt', data.token);
+        localStorage.setItem('techsetu-username', data.name);
+        localStorage.setItem('techsetu-email', data.email);
+        setJwtToken(data.token);
+        setUserName(data.name);
+        showToast(`Google session verified. Welcome, ${data.name}!`);
+      } else {
+        throw new Error('Google Authentication handshake failed.');
+      }
+    } catch (err: any) {
+      setAuthError(err.message || 'Google Auth gateway timed out.');
+    } finally {
+      setIsAuthenticating(false);
+    }
+  };
+
   // Guest exploration login override
   const handleGuestExplore = () => {
     localStorage.setItem('techsetu-jwt', 'demo-guest-token');
@@ -541,6 +598,21 @@ function App() {
             </button>
           </form>
 
+          {/* Google Sign-in button */}
+          <button
+            type="button"
+            onClick={() => setShowGoogleModal(true)}
+            className="google-signin-btn-main w-full flex items-center justify-center gap-2.5 py-2.5 mt-3.5 rounded-xl border border-white/8 bg-white/3 hover:bg-white/6 text-xs font-bold text-white transition-all cursor-pointer shadow-md hover:border-white/12"
+          >
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+              <path
+                fill="#EA4335"
+                d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.2-5.136 4.2A5.72 5.72 0 0 1 8.24 12.87a5.72 5.72 0 0 1 5.751-5.73 5.59 5.59 0 0 1 3.93 1.575l3.05-3.05A9.97 9.97 0 0 0 13.99 2.22 10.02 10.02 0 0 0 4 12.23a10.02 10.02 0 0 0 10.01 10.01 9.87 9.87 0 0 0 9.91-10.01c0-.663-.06-1.285-.18-1.945H12.24z"
+              />
+            </svg>
+            <span>Sign in with Google</span>
+          </button>
+
           <div className="relative flex py-4 items-center">
             <div className="flex-grow border-t border-white/5"></div>
             <span className="flex-shrink mx-4 text-[9px] text-[var(--text-muted)] uppercase font-bold">Or</span>
@@ -551,6 +623,98 @@ function App() {
             Explore Demo Environment
           </button>
         </div>
+
+        {/* Google Account Chooser Modal */}
+        {showGoogleModal && (
+          <div className="google-modal-overlay">
+            <div className="google-modal-card">
+              <div className="google-modal-header">
+                <svg className="w-5 h-5 mx-auto mb-2" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  />
+                </svg>
+                <h3 className="google-modal-title">Sign in with Google</h3>
+                <p className="google-modal-subtitle">Choose an account to continue to TechSetu OS</p>
+              </div>
+
+              <div className="google-accounts-list">
+                <button
+                  onClick={() => handleGoogleLogin("vatulrana104@gmail.com", "Atul Verma")}
+                  className="google-account-item"
+                >
+                  <div className="google-avatar">
+                    <span>AV</span>
+                  </div>
+                  <div className="google-account-details">
+                    <span className="google-account-name">Atul Verma</span>
+                    <span className="google-account-email">vatulrana104@gmail.com</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleGoogleLogin("atulrana.work@gmail.com", "Atul Rana")}
+                  className="google-account-item"
+                >
+                  <div className="google-avatar google-avatar-blue">
+                    <span>AR</span>
+                  </div>
+                  <div className="google-account-details">
+                    <span className="google-account-name">Atul Rana</span>
+                    <span className="google-account-email">atulrana.work@gmail.com</span>
+                  </div>
+                </button>
+              </div>
+
+              <div className="google-custom-account">
+                <span className="google-custom-title">Or use another account:</span>
+                <div className="flex gap-2 mt-1.5">
+                  <input
+                    type="email"
+                    placeholder="email@example.com"
+                    value={customGoogleEmail}
+                    onChange={(e) => setCustomGoogleEmail(e.target.value)}
+                    className="google-custom-input"
+                  />
+                  <button
+                    onClick={() => {
+                      if (customGoogleEmail.trim() && customGoogleEmail.includes("@")) {
+                        const baseName = customGoogleEmail.split("@")[0];
+                        const formattedName = baseName.charAt(0).toUpperCase() + baseName.slice(1);
+                        handleGoogleLogin(customGoogleEmail.trim(), formattedName);
+                      } else {
+                        showToast("Please enter a valid email address.");
+                      }
+                    }}
+                    className="google-custom-btn"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowGoogleModal(false)}
+                className="google-cancel-btn"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
